@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -64,5 +66,27 @@ class BookControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.isbn").value("1234567890"))
                 .andExpect(jsonPath("$.title").isString());
+    }
+
+    @Test
+    void getBookByIsbn_ReturnsBookDetails() throws Exception {
+        String isbn = "9780140328721";
+
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Matilda")
+                .publisher("Puffin")
+                .publishedDate("1988")
+                .description("A story about a gifted girl")
+                .coverUrl("https://covers.openlibrary.org/b/isbn/" + isbn + "-L.jpg")
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+        mockMvc.perform(get("/users/{userId}/books/{isbn}", testUser.getId(), isbn))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isbn").value(isbn))
+                .andExpect(jsonPath("$.title").value("Matilda"))
+                .andExpect(jsonPath("$.coverUrl", containsString(isbn)));
     }
 }

@@ -1,5 +1,6 @@
 package at.fhburgenland.bookmanager.service;
 
+import at.fhburgenland.bookmanager.exception.BookNotFoundException;
 import at.fhburgenland.bookmanager.exception.InvalidBookException;
 import at.fhburgenland.bookmanager.exception.UserNotFoundException;
 import at.fhburgenland.bookmanager.model.Book;
@@ -101,5 +102,24 @@ public class BookService {
         } catch (IOException e) {
             throw new InvalidBookException("Fehler beim Parsen der Buchdaten: " + e.getMessage());
         }
+    }
+
+    /**
+     * Ruft ein bestimmtes Buch eines Benutzers anhand der ISBN ab.
+     *
+     * @param userId Die ID des Benutzers
+     * @param isbn   Die ISBN des Buches
+     * @return Das gefundene Buch
+     * @throws UserNotFoundException Wenn der Benutzer nicht existiert
+     * @throws BookNotFoundException Wenn kein Buch mit der angegebenen ISBN gefunden wurde
+     */
+    public Book getBookByUserIdAndIsbn(UUID userId, String isbn) {
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        return user.getBooks().stream()
+                .filter(book -> book.getIsbn().equalsIgnoreCase(isbn))
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException(isbn));
     }
 }

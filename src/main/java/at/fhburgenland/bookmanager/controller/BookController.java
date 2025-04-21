@@ -39,4 +39,21 @@ public class BookController {
         Book created = bookService.addBookToUserByIsbn(userId, isbnRequest.getIsbn());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
+    /**
+     * Liefert die vollständigen Details eines Buches für einen bestimmten Benutzer.
+     *
+     * @param userId ID des Benutzers
+     * @param isbn   ISBN des Buches
+     * @return HTTP 200 mit dem Buchobjekt oder HTTP 404, wenn nicht vorhanden
+     */
+    @GetMapping("/{isbn}")
+    public ResponseEntity<Book> getBookDetails(
+            @PathVariable UUID userId,
+            @PathVariable String isbn
+    ) {
+        Book book = bookService.getBookByUserIdAndIsbn(userId, isbn);
+        return ResponseEntity.ok(book);
+    }
+
 }
