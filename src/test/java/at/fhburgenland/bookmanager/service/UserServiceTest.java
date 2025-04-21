@@ -7,6 +7,8 @@ import at.fhburgenland.bookmanager.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,4 +49,19 @@ class UserServiceTest {
 
         assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(validUserDto));
     }
+
+    @Test
+    void getAllUsers_GibtListeZurück() {
+        List<User> mockUsers = List.of(
+                User.builder().name("User1").email("user1@example.com").build(),
+                User.builder().name("User2").email("user2@example.com").build()
+        );
+        when(userRepository.findAll()).thenReturn(mockUsers);
+
+        List<User> result = userService.getAllUsers();
+
+        assertEquals(2, result.size());
+        assertEquals("user1@example.com", result.get(0).getEmail());
+    }
+
 }

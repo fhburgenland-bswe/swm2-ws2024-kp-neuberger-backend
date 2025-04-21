@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * REST-Controller für Benutzeroperationen.
  */
@@ -28,5 +30,15 @@ public class UserController {
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDto userDto) {
         User createdUser = userService.createUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+    }
+
+    /**
+     * Gibt eine Liste aller registrierten Benutzer zurück.
+     *
+     * @return Liste der Benutzer mit HTTP 200 OK
+     */
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 }

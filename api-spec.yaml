@@ -23,6 +23,21 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/User"
+        "500":
+          description: Interner Serverfehler – z. B. bei unerwarteten Laufzeitfehlern.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
     post:
       summary: Erstellt einen neuen Benutzer
       description: Erstellt einen Benutzer, indem Name und Email übergeben werden.
