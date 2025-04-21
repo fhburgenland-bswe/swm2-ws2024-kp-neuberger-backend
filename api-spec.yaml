@@ -1,0 +1,439 @@
+openapi: 3.0.3
+info:
+  title: Buchmanagement API
+  version: "1.0.0"
+  description: |
+    Diese API ermöglicht die Verwaltung von Benutzern, deren Büchern und Buchrezensionen.
+    Bücher werden anhand ihrer ISBN hinzugefügt, und die Buchdetails werden automatisch
+    über die OpenLibrary API abgerufen.
+servers:
+  - url: http://localhost:8080
+    description: Basis-URL ohne Pfad-Prefix
+paths:
+  /users:
+    get:
+      summary: Liste aller Benutzer
+      description: Gibt eine Liste aller registrierten Benutzer zurück.
+      responses:
+        "200":
+          description: Erfolgreiche Anfrage, Liste der Benutzer.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: Erstellt einen neuen Benutzer
+      description: Erstellt einen Benutzer, indem Name und Email übergeben werden.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+              required:
+                - name
+                - email
+      responses:
+        "201":
+          description: Benutzer erfolgreich erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/{userId}:
+    get:
+      summary: Benutzerdetails abrufen
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID des Benutzers
+      responses:
+        "200":
+          description: Erfolgreiche Anfrage, Benutzerdetails.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Aktualisiert ein Benutzerprofil
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID des Benutzers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+      responses:
+        "200":
+          description: Benutzerprofil erfolgreich aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      summary: Löscht einen Benutzer
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: ID des Benutzers
+      responses:
+        "204":
+          description: Benutzer erfolgreich gelöscht.
+  /users/{userId}/books:
+    get:
+      summary: Liste der Bücher eines Benutzers abrufen
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: rating
+          schema:
+            type: integer
+          required: false
+      responses:
+        "200":
+          description: Erfolgreiche Anfrage, Bücherliste.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+    post:
+      summary: Fügt ein neues Buch hinzu
+      description: Fügt ein Buch via ISBN hinzu; Details von der OpenLibrary API.
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isbn:
+                  type: string
+              required:
+                - isbn
+      responses:
+        "201":
+          description: Buch erfolgreich hinzugefügt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+  /users/{userId}/books/search:
+    get:
+      summary: Suche und Filtere Bücher
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: title
+          schema:
+            type: string
+        - in: query
+          name: author
+          schema:
+            type: string
+        - in: query
+          name: year
+          schema:
+            type: integer
+        - in: query
+          name: rating
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Gefilterte Bücherliste.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+  /users/{userId}/books/{isbn}:
+    get:
+      summary: Buchdetails abrufen
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Buchdetails.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+    put:
+      summary: Buch oder Bewertung aktualisieren
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                authors:
+                  type: array
+                  items:
+                    type: string
+                publisher:
+                  type: string
+                publishedDate:
+                  type: string
+                  format: date
+                coverUrl:
+                  type: string
+                description:
+                  type: string
+                rating:
+                  type: integer
+      responses:
+        "200":
+          description: Buch erfolgreich aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+    delete:
+      summary: Buch löschen
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Buch erfolgreich gelöscht.
+  /users/{userId}/books/{isbn}/reviews:
+    get:
+      summary: Alle Rezensionen eines Buches
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Liste der Rezensionen.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      summary: Rezension hinzufügen
+      description: Erstellt Bewertung und Text für ein Buch.
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                reviewText:
+                  type: string
+              required:
+                - rating
+                - reviewText
+      responses:
+        "201":
+          description: Rezension erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+  /users/{userId}/books/{isbn}/reviews/{reviewId}:
+    put:
+      summary: Rezension aktualisieren
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: reviewId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                reviewText:
+                  type: string
+      responses:
+        "200":
+          description: Rezension aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+    delete:
+      summary: Rezension löschen
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: isbn
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: reviewId
+          schema:
+            type: string
+          required: true
+      responses:
+        "204":
+          description: Rezension gelöscht.
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        books:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"
+    Book:
+      type: object
+      properties:
+        isbn:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        publisher:
+          type: string
+        publishedDate:
+          type: string
+          format: date
+        coverUrl:
+          type: string
+          description: URL zum großen Coverbild
+        description:
+          type: string
+        rating:
+          type: integer
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+        reviewText:
+          type: string
+      required:
+        - id
+        - rating
+        - reviewText
