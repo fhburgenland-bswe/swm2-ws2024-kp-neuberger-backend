@@ -317,17 +317,22 @@ paths:
   /users/{userId}/books/{isbn}:
     get:
       summary: Buchdetails abrufen
+      description: >
+        Liefert sämtliche gespeicherten Informationen eines bestimmten Buches für den angegebenen Benutzer.
+        Dazu gehören Titel, Autoren, Verlag, Veröffentlichungsdatum, Beschreibung, Bewertung und Cover-URL.
       parameters:
         - in: path
           name: userId
           schema:
             type: string
           required: true
+          description: ID des Benutzers
         - in: path
           name: isbn
           schema:
             type: string
           required: true
+          description: ISBN des abzurufenden Buches
       responses:
         "200":
           description: Buchdetails.
@@ -335,6 +340,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Book"
+        "404":
+          description: Buch oder Benutzer wurde nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
     put:
       summary: Buch oder Bewertung aktualisieren
       parameters:

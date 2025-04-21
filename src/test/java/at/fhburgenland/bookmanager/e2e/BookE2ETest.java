@@ -107,4 +107,43 @@ class BookE2ETest {
     private String getUrl(String path) {
         return "http://localhost:" + port + path;
     }
+
+    @Test
+    void getBookByIsbn_ExistingBook_ReturnsBookDetails() {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .publisher("Puffin")
+                .publishedDate("1988")
+                .description("A story about a gifted girl")
+                .coverUrl("https://covers.openlibrary.org/b/isbn/9780140328721-L.jpg")
+                .user(testUser)
+                .build();
+
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        ResponseEntity<Book> response = restTemplate.getForEntity(
+                getUrl("/users/" + testUser.getId() + "/books/9780140328721"), Book.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTitle()).isEqualTo("Matilda");
+        assertThat(response.getBody().getIsbn()).isEqualTo("9780140328721");
+    }
+
+    @Test
+    void getBookByIsbn_BookNotFound_Returns404() {
+        String isbn = "9999999999"; // Nicht vorhandenes Buch
+
+        try {
+            restTemplate.getForEntity(
+                    getUrl("/users/" + testUser.getId() + "/books/" + isbn), String.class);
+            fail("Expected HttpClientErrorException.NotFound");
+        } catch (HttpClientErrorException.NotFound ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Buch nicht gefunden");
+            assertThat(ex.getResponseBodyAsString()).contains(isbn);
+        }
+    }
 }

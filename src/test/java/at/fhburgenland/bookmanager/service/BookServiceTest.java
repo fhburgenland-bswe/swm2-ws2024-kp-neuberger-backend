@@ -1,5 +1,6 @@
 package at.fhburgenland.bookmanager.service;
 
+import at.fhburgenland.bookmanager.exception.BookNotFoundException;
 import at.fhburgenland.bookmanager.exception.InvalidBookException;
 import at.fhburgenland.bookmanager.exception.UserNotFoundException;
 import at.fhburgenland.bookmanager.model.Book;
@@ -115,5 +116,40 @@ class BookServiceTest {
                 .thenReturn(new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR));
         assertThrows(InvalidBookException.class,
                 () -> bookService.addBookToUserByIsbn(userId, "123"));
+    }
+
+    @Test
+    void getBookByUserIdAndIsbn_ExistingBook_ReturnsBook() {
+        String isbn = "1234567890";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Unit Test Book")
+                .user(mockUser)
+                .build();
+
+        mockUser.getBooks().add(book);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        Book result = bookService.getBookByUserIdAndIsbn(userId, isbn);
+
+        assertNotNull(result);
+        assertEquals(isbn, result.getIsbn());
+        assertEquals("Unit Test Book", result.getTitle());
+    }
+
+    @Test
+    void getBookByUserIdAndIsbn_BookNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        assertThrows(BookNotFoundException.class,
+                () -> bookService.getBookByUserIdAndIsbn(userId, "notfoundisbn"));
+    }
+
+    @Test
+    void getBookByUserIdAndIsbn_UserNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+                () -> bookService.getBookByUserIdAndIsbn(userId, "1234567890"));
     }
 }

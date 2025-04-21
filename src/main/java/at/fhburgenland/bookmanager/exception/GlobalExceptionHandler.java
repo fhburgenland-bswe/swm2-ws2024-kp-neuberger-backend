@@ -98,4 +98,25 @@ public class GlobalExceptionHandler {
         detail.setDetail(ex.getMessage());
         return detail;
     }
+
+    /**
+     * Behandelt den Fall, dass ein Buch anhand seiner ISBN nicht gefunden wurde.
+     *
+     * Diese Methode fängt die ausgelöste {@link BookNotFoundException} ab
+     * und erstellt ein standardisiertes {@link ProblemDetail}-Objekt mit HTTP-Status 404 (Not Found).
+     * Der Titel wird auf "Buch nicht gefunden" gesetzt und das Detail enthält
+     * die genaue Fehlermeldung aus der Exception.
+     *
+     * @param ex Die ausgelöste {@link BookNotFoundException}, die angibt, welche ISBN nicht gefunden wurde
+     * @return Ein {@link ProblemDetail}-Objekt mit Status 404, Titel "Buch nicht gefunden"
+     *         und Detail-Nachricht aus der Exception
+     */
+    @ExceptionHandler(BookNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleBookNotFound(BookNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        detail.setTitle("Buch nicht gefunden");
+        detail.setDetail(ex.getMessage());
+        return detail;
+    }
 }
