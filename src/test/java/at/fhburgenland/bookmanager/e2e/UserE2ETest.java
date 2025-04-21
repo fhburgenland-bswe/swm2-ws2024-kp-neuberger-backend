@@ -11,6 +11,8 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -50,4 +52,20 @@ class UserE2ETest {
         assertThat(response.getBody().getEmail()).isEqualTo("anna@e2e.at");
         assertThat(userRepository.findByEmail("anna@e2e.at")).isPresent();
     }
+
+    @Test
+    void getAllUsers_E2E_ReturnsUserList() throws Exception {
+        userRepository.saveAll(List.of(
+                User.builder().name("Alice").email("alice@e2e.at").build(),
+                User.builder().name("Bob").email("bob@e2e.at").build()
+        ));
+
+        ResponseEntity<User[]> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/users", User[].class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().length).isGreaterThanOrEqualTo(2);
+    }
+
 }

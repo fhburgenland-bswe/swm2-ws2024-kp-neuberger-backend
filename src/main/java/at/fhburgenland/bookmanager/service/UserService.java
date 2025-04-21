@@ -6,6 +6,9 @@ import at.fhburgenland.bookmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import at.fhburgenland.bookmanager.exception.UserAlreadyExistsException;
+
+import java.util.List;
+
 /**
  * Service zur Handhabung der Benutzerlogik.
  */
@@ -33,5 +36,14 @@ public class UserService {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    /**
+     * Gibt alle im System gespeicherten Benutzer zurück.
+     *
+     * @return Liste aller Benutzer
+     */
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 }

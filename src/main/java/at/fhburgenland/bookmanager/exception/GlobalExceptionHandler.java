@@ -39,4 +39,24 @@ public class GlobalExceptionHandler {
         );
         return detail;
     }
+
+    /**
+     * Globale Ausnahmebehandlung für unerwartete Fehler.
+     *
+     * Diese Methode fängt alle nicht explizit behandelten Exceptions ab,
+     * um eine strukturierte Antwort mit HTTP-Status 500 zurückzugeben.
+     * Dadurch wird vermieden, dass interne Fehler dem Client als
+     * unstrukturierter Stacktrace angezeigt werden.
+     *
+     * @param ex Die aufgetretene Exception
+     * @return Ein ProblemDetail-Objekt mit Fehlerbeschreibung
+     */
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ProblemDetail handleGenericException(Exception ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        detail.setTitle("Interner Fehler");
+        detail.setDetail("Ein unerwarteter Fehler ist aufgetreten.");
+        return detail;
+    }
 }
