@@ -4,6 +4,7 @@ import at.fhburgenland.bookmanager.exception.BookNotFoundException;
 import at.fhburgenland.bookmanager.exception.InvalidBookException;
 import at.fhburgenland.bookmanager.exception.UserNotFoundException;
 import at.fhburgenland.bookmanager.model.Book;
+import at.fhburgenland.bookmanager.model.User;
 import at.fhburgenland.bookmanager.repository.BookRepository;
 import at.fhburgenland.bookmanager.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,6 +28,7 @@ public class BookService {
     private final String apiUrl;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final BookRepository bookRepository;
 
     /**
      * Konstruktor für den BookService.
@@ -48,6 +50,8 @@ public class BookService {
         this.apiUrl       = apiUrl;
         this.userRepository = userRepository;
         this.objectMapper   = objectMapper;
+        this.bookRepository = bookRepository;
+
     }
 
     /**
@@ -151,4 +155,26 @@ public class BookService {
                 .findFirst()
                 .orElseThrow(() -> new BookNotFoundException(isbn));
     }
+
+    /**
+     * Löscht ein Buch aus der Sammlung eines Benutzers anhand der ISBN.
+     *
+     * @param userId Die Benutzer-ID
+     * @param isbn   Die ISBN des Buchs
+     * @throws UserNotFoundException Wenn der Benutzer nicht existiert
+     * @throws BookNotFoundException Wenn das Buch nicht existiert oder nicht dem Benutzer zugeordnet ist
+     */
+    public void deleteBookByUserIdAndIsbn(UUID userId, String isbn) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        Book book = user.getBooks().stream()
+                .filter(b -> b.getIsbn().equalsIgnoreCase(isbn))
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException(isbn));
+
+        user.getBooks().remove(book);
+        bookRepository.delete(book);
+    }
+
 }
