@@ -74,4 +74,20 @@ public class BookController {
         Book book = bookService.getBookByUserIdAndIsbn(userId, isbn);
         return ResponseEntity.ok(book);
     }
+
+    /**
+     * Löscht ein Buch anhand der ISBN für einen bestimmten Benutzer.
+     *
+     * @param userId Die ID des Benutzers
+     * @param isbn   Die ISBN des zu löschenden Buches
+     * @return HTTP 204 bei Erfolg, 404 bei Nichtfinden
+     */
+    @DeleteMapping("/{isbn}")
+    public ResponseEntity<Void> deleteBook(
+            @PathVariable("userId") UUID userId,
+            @PathVariable("isbn") String isbn
+    ) {
+        bookService.deleteBookByUserIdAndIsbn(userId, isbn);
+        return ResponseEntity.noContent().build();
+    }
 }

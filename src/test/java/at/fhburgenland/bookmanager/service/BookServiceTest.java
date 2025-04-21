@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BookServiceTest {
 
@@ -189,4 +190,31 @@ class BookServiceTest {
         });
     }
 
+    @Test
+    void deleteBookByUserIdAndIsbn_BookExists_DeletesSuccessfully() {
+        Book book = Book.builder()
+                .isbn("1234567890")
+                .user(mockUser)
+                .build();
+
+        mockUser.getBooks().add(book);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        bookService.deleteBookByUserIdAndIsbn(userId, "1234567890");
+
+        verify(bookRepository).delete(book);
+        assertThat(mockUser.getBooks()).doesNotContain(book);
+    }
+
+    @Test
+    void deleteBookByUserIdAndIsbn_BookNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        assertThrows(BookNotFoundException.class, () -> bookService.deleteBookByUserIdAndIsbn(userId, "999"));
+    }
+
+    @Test
+    void deleteBookByUserIdAndIsbn_UserNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        assertThrows(UserNotFoundException.class, () -> bookService.deleteBookByUserIdAndIsbn(userId, "1234567890"));
+    }
 }

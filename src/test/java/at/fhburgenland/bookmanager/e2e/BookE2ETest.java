@@ -249,4 +249,48 @@ class BookE2ETest {
         assertThat(response.getBody().getRating()).isEqualTo(4);
         assertThat(response.getBody().getIsbn()).isEqualTo("9780140328721");
     }
+
+    @Test
+    void deleteBook_ExistingBook_Returns204() {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        ResponseEntity<Void> response = restTemplate.exchange(
+                getUrl("/users/" + testUser.getId() + "/books/9780140328721"),
+                HttpMethod.DELETE,
+                null,
+                Void.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(bookRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    void deleteBook_BookNotFound_Returns404() {
+        try {
+            restTemplate.delete(getUrl("/users/" + testUser.getId() + "/books/0000000000"));
+            fail("Expected 404 Not Found");
+        } catch (HttpClientErrorException.NotFound ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Buch nicht gefunden");
+        }
+    }
+
+    @Test
+    void deleteBook_UserNotFound_Returns404() {
+        UUID unknownUserId = UUID.randomUUID();
+
+        try {
+            restTemplate.delete(getUrl("/users/" + unknownUserId + "/books/9780140328721"));
+            fail("Expected 404 Not Found");
+        } catch (HttpClientErrorException.NotFound ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Benutzer nicht gefunden");
+        }
+    }
 }

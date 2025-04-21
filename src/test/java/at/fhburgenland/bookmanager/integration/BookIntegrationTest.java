@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +21,9 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -195,5 +196,36 @@ class BookIntegrationTest {
                 .andExpect(jsonPath("$.title").value("Buch nicht gefunden"))
                 .andExpect(jsonPath("$.detail", containsString(unknownIsbn)));
     }
+    @Test
+    void deleteBook_ExistingBook_ReturnsNoContent() throws Exception {
+        String isbn = "9780140328721";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Matilda")
+                .user(testUser)
+                .build();
 
+        testUser.setBooks(new ArrayList<>(List.of(book)));
+        userRepository.save(testUser);
+
+        mockMvc.perform(delete("/users/" + testUser.getId() + "/books/" + isbn))
+                .andExpect(status().isNoContent());
+
+        assertThat(bookRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    void deleteBook_BookNotFound_Returns404() throws Exception {
+        mockMvc.perform(delete("/users/" + testUser.getId() + "/books/9999999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Buch nicht gefunden"));
+    }
+
+    @Test
+    void deleteBook_UserNotFound_Returns404() throws Exception {
+        UUID unknownUserId = UUID.randomUUID();
+        mockMvc.perform(delete("/users/" + unknownUserId + "/books/9780140328721"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
 }

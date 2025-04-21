@@ -412,6 +412,7 @@ paths:
                     type: string
     delete:
       summary: Buch löschen
+      description: Entfernt ein bestimmtes Buch eines Benutzers anhand der ISBN.
       parameters:
         - in: path
           name: userId
@@ -426,6 +427,12 @@ paths:
       responses:
         "204":
           description: Buch erfolgreich gelöscht.
+        "404":
+          description: Buch oder Benutzer wurde nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /users/{userId}/books/{isbn}/reviews:
     get:
       summary: Alle Rezensionen eines Buches
@@ -569,6 +576,24 @@ components:
           type: integer
         detail:
           type: string
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: "Buch nicht gefunden"
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: "Buch mit ISBN 9780140328721 wurde nicht gefunden."
+        instance:
+          type: string
+          example: "/users/123e4567-e89b-12d3-a456-426614174000/books/9780140328721"
     Book:
       type: object
       properties:
