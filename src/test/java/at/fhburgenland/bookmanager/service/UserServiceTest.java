@@ -110,5 +110,24 @@ class UserServiceTest {
         assertThrows(UserNotFoundException.class,
                 () -> userService.updateUser(missingId, new UserDto("Test", "test@mail.at")));
     }
+
+    @Test
+    void deleteUser_Vorhanden_LöschtBenutzer() {
+        UUID id = UUID.randomUUID();
+        User user = User.builder().id(id).name("Max").email("max@test.at").build();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(id);
+
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void deleteUser_NichtVorhanden_LöstExceptionAus() {
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(id));
+    }
 }
 

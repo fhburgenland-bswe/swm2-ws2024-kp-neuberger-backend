@@ -67,4 +67,18 @@ public class UserController {
         User updatedUser = userService.updateUser(userId, userDto);
         return ResponseEntity.ok(updatedUser);
     }
+
+    /**
+     * Löscht einen Benutzer anhand seiner ID.
+     *
+     * Wenn der Benutzer existiert, wird er gelöscht. Ansonsten wird eine
+     * UserNotFoundException ausgelöst und als HTTP 404 zurückgegeben.
+     *
+     * @param userId Die ID des zu löschenden Benutzers
+     */
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable UUID userId) {
+        userService.deleteUser(userId);
+    }
 }

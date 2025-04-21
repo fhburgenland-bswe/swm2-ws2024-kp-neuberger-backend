@@ -15,9 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.UUID;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -123,5 +122,22 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalid)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deleteUser_Vorhanden_ReturnsNoContent() throws Exception {
+        User user = userService.createUser(new UserDto("Delete Me", "delete@controller.at"));
+
+        mockMvc.perform(delete("/users/" + user.getId()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteUser_NichtVorhanden_ReturnsNotFound() throws Exception {
+        UUID fakeId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/users/" + fakeId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
     }
 }

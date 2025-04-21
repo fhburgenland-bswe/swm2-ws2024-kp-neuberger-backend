@@ -18,9 +18,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -129,5 +127,24 @@ class UserIntegrationTest {
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
+
+    @Test
+    void deleteUser_Existiert_Returns204() throws Exception {
+        User user = userRepository.save(User.builder()
+                .name("Lösch Mich")
+                .email("delete@test.at")
+                .build());
+
+        mockMvc.perform(delete("/users/" + user.getId()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteUser_NichtVorhanden_Returns404() throws Exception {
+        UUID fakeId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/users/" + fakeId))
+                .andExpect(status().isNotFound());
     }
 }
