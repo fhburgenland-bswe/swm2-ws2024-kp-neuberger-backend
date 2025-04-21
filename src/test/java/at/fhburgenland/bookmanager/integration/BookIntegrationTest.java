@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -48,7 +49,7 @@ class BookIntegrationTest {
         testUser = userRepository.save(User.builder()
                 .name("Integration User")
                 .email("integration@book.at")
-                .books(List.of())
+                .books(new ArrayList<>())
                 .build());
     }
 
@@ -124,4 +125,75 @@ class BookIntegrationTest {
                 .andExpect(jsonPath("$.title").value("Buch nicht gefunden"))
                 .andExpect(jsonPath("$.detail", containsString(unknownIsbn)));
     }
+
+    @Test
+    void updateBookRating_ValidRequest_ReturnsUpdatedBook() throws Exception {
+        String isbn = "9780140328721";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Matilda")
+                .rating(3)
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+        String json = """
+        {
+          "rating": 5
+        }
+        """;
+        mockMvc.perform(put("/users/" + testUser.getId() + "/books/" + isbn)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isbn").value(isbn))
+                .andExpect(jsonPath("$.rating").value(5));
+    }
+
+    @Test
+    void updateBookRating_InvalidRating_ReturnsBadRequest() throws Exception {
+        String isbn = "9780140328721";
+
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Matilda")
+                .rating(3)
+                .user(testUser)
+                .build();
+
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String invalidRatingJson = """
+    {
+      "rating": 6
+    }
+    """;
+
+        mockMvc.perform(put("/users/" + testUser.getId() + "/books/" + isbn)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRatingJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail", containsString("höchstens 5")));
+    }
+
+    @Test
+    void updateBookRating_BookNotFound_ReturnsNotFound() throws Exception {
+        String unknownIsbn = "0000000000";
+
+        String ratingJson = """
+    {
+      "rating": 4
+    }
+    """;
+
+        mockMvc.perform(put("/users/" + testUser.getId() + "/books/" + unknownIsbn)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(ratingJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Buch nicht gefunden"))
+                .andExpect(jsonPath("$.detail", containsString(unknownIsbn)));
+    }
+
 }

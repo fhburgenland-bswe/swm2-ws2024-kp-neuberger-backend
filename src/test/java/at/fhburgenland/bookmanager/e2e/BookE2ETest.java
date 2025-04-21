@@ -134,7 +134,7 @@ class BookE2ETest {
 
     @Test
     void getBookByIsbn_BookNotFound_Returns404() {
-        String isbn = "9999999999"; // Nicht vorhandenes Buch
+        String isbn = "9999999999";
 
         try {
             restTemplate.getForEntity(
@@ -145,5 +145,108 @@ class BookE2ETest {
             assertThat(ex.getResponseBodyAsString()).contains("Buch nicht gefunden");
             assertThat(ex.getResponseBodyAsString()).contains(isbn);
         }
+    }
+
+    @Test
+    void updateBook_InvalidRating_ReturnsBadRequest() throws Exception {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .rating(3)
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String jsonBody = """
+        {
+          "rating": 6
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+        try {
+            restTemplate.exchange(
+                    getUrl("/users/" + testUser.getId() + "/books/9780140328721"),
+                    HttpMethod.PUT,
+                    entity,
+                    String.class
+            );
+            fail("Expected HttpClientErrorException.BadRequest");
+        } catch (HttpClientErrorException.BadRequest ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(ex.getResponseBodyAsString()).contains("Bewertung darf höchstens 5 sein");
+        }
+    }
+
+    @Test
+    void updateBook_RatingTooLow_ReturnsBadRequest() throws Exception {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .rating(3)
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String jsonBody = """
+        {
+          "rating": 0
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+        try {
+            restTemplate.exchange(
+                    getUrl("/users/" + testUser.getId() + "/books/9780140328721"),
+                    HttpMethod.PUT,
+                    entity,
+                    String.class
+            );
+            fail("Expected HttpClientErrorException.BadRequest");
+        } catch (HttpClientErrorException.BadRequest ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(ex.getResponseBodyAsString()).contains("Bewertung muss mindestens 1 sein");
+        }
+    }
+
+    @Test
+    void updateBook_ValidRating_ReturnsUpdatedBook() throws Exception {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .rating(3)
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String jsonBody = """
+        {
+          "rating": 4
+        }
+        """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+        ResponseEntity<Book> response = restTemplate.exchange(
+                getUrl("/users/" + testUser.getId() + "/books/9780140328721"),
+                HttpMethod.PUT,
+                entity,
+                Book.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getRating()).isEqualTo(4);
+        assertThat(response.getBody().getIsbn()).isEqualTo("9780140328721");
     }
 }

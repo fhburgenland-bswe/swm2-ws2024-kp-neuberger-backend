@@ -105,6 +105,35 @@ public class BookService {
     }
 
     /**
+     * Aktualisiert die Bewertung eines Buchs anhand der ISBN und Benutzer-ID.
+     *
+     * @param userId Die ID des Benutzers
+     * @param isbn   Die ISBN des Buches
+     * @param rating Neue Bewertung (zwischen 1 und 5)
+     * @return Das aktualisierte Buchobjekt
+     * @throws UserNotFoundException Wenn der Benutzer nicht existiert
+     * @throws BookNotFoundException Wenn das Buch nicht gefunden wurde
+     * @throws InvalidBookException  Wenn die Bewertung ungültig ist
+     */
+    public Book updateBookRating(UUID userId, String isbn, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new InvalidBookException("Die Bewertung muss zwischen 1 und 5 liegen.");
+        }
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        var book = user.getBooks().stream()
+                .filter(b -> b.getIsbn().equalsIgnoreCase(isbn))
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException(isbn));
+
+        book.setRating(rating);
+        userRepository.save(user);
+        return book;
+    }
+
+    /**
      * Ruft ein bestimmtes Buch eines Benutzers anhand der ISBN ab.
      *
      * @param userId Die ID des Benutzers
