@@ -109,6 +109,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "404":
+          description: Benutzer nicht gefunden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
     put:
       summary: Aktualisiert ein Benutzerprofil
       parameters:

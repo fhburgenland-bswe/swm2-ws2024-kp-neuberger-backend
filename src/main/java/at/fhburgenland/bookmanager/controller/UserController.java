@@ -9,6 +9,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST-Controller für Benutzeroperationen.
@@ -40,5 +41,17 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    /**
+     * Gibt die Details eines Benutzers anhand seiner ID zurück.
+     *
+     * @param userId Die ID des Benutzers
+     * @return Antwort mit Status 200 und Benutzerdetails oder 404, falls nicht gefunden
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<User> getUserById(@PathVariable UUID userId) {
+        User user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
     }
 }

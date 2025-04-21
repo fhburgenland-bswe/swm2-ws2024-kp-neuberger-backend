@@ -9,10 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.UUID;
 
+import static org.aspectj.bridge.MessageUtil.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -54,7 +57,7 @@ class UserE2ETest {
     }
 
     @Test
-    void getAllUsers_E2E_ReturnsUserList() throws Exception {
+    void getAllUsers_E2E_ReturnsUserList() {
         userRepository.saveAll(List.of(
                 User.builder().name("Alice").email("alice@e2e.at").build(),
                 User.builder().name("Bob").email("bob@e2e.at").build()
@@ -66,6 +69,40 @@ class UserE2ETest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().length).isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    void getUserById_E2E_ReturnsUser() {
+        User saved = userRepository.save(
+                User.builder()
+                        .name("E2E User")
+                        .email("e2euser@test.at")
+                        .build()
+        );
+
+        ResponseEntity<User> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/users/" + saved.getId(),
+                User.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getEmail()).isEqualTo("e2euser@test.at");
+    }
+
+    @Test
+    void getUserById_E2E_NotFound() {
+        UUID randomId = UUID.randomUUID();
+        try {
+            restTemplate.getForEntity(
+                    "http://localhost:" + port + "/users/" + randomId,
+                    String.class
+            );
+            fail("Expected HttpClientErrorException.NotFound");
+        } catch (HttpClientErrorException.NotFound ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Benutzer nicht gefunden");
+        }
     }
 
 }

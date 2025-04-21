@@ -2,6 +2,7 @@ package at.fhburgenland.bookmanager.service;
 
 import at.fhburgenland.bookmanager.dto.UserDto;
 import at.fhburgenland.bookmanager.exception.UserAlreadyExistsException;
+import at.fhburgenland.bookmanager.exception.UserNotFoundException;
 import at.fhburgenland.bookmanager.model.User;
 import at.fhburgenland.bookmanager.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,8 @@ import org.mockito.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -62,6 +65,26 @@ class UserServiceTest {
 
         assertEquals(2, result.size());
         assertEquals("user1@example.com", result.get(0).getEmail());
+    }
+
+    @Test
+    void getUserById_Vorhanden_ReturnsUser() {
+        UUID id = UUID.randomUUID();
+        User mock = new User(id, "Service Test", "service@test.at");
+        when(userRepository.findById(id)).thenReturn(Optional.of(mock));
+
+        User result = userService.getUserById(id);
+
+        assertEquals("Service Test", result.getName());
+        assertEquals("service@test.at", result.getEmail());
+    }
+
+    @Test
+    void getUserById_NichtGefunden_WirftException() {
+        UUID id = UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> userService.getUserById(id));
     }
 
 }
