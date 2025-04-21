@@ -1,0 +1,50 @@
+package at.fhburgenland.bookmanager.service;
+
+import at.fhburgenland.bookmanager.dto.UserDto;
+import at.fhburgenland.bookmanager.exception.UserAlreadyExistsException;
+import at.fhburgenland.bookmanager.model.User;
+import at.fhburgenland.bookmanager.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+/**
+ * Unit-Test für den UserService.
+ */
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    private UserDto validUserDto;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        validUserDto = new UserDto("Max Mustermann", "max@beispiel.de");
+    }
+
+    @Test
+    void createUser_Erfolgreich() {
+        when(userRepository.findByEmail(validUserDto.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createUser(validUserDto);
+
+        assertEquals(validUserDto.getName(), result.getName());
+        assertEquals(validUserDto.getEmail(), result.getEmail());
+    }
+
+    @Test
+    void createUser_EmailBereitsVorhanden_LöstExceptionAus() {
+        when(userRepository.findByEmail(validUserDto.getEmail())).thenReturn(Optional.of(new User()));
+
+        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(validUserDto));
+    }
+}
