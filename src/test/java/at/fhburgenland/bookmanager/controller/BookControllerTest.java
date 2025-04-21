@@ -89,4 +89,38 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.title").value("Matilda"))
                 .andExpect(jsonPath("$.coverUrl", containsString(isbn)));
     }
+
+    @Test
+    void updateBookRating_ValidRequest_ReturnsUpdatedBook() throws Exception {
+        String isbn = "9780140328721";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Matilda")
+                .rating(4)
+                .user(testUser)
+                .build();
+        Book existingBook = Book.builder()
+                .isbn("9780140328721")
+                .title("Matilda")
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(existingBook);
+        userRepository.save(testUser);
+
+        Mockito.when(bookService.updateBookRating(eq(testUser.getId()), eq(isbn), eq(4)))
+                .thenReturn(book);
+
+        String body = """
+        {
+          "rating": 4
+        }
+        """;
+
+        mockMvc.perform(put("/users/{userId}/books/{isbn}", testUser.getId(), isbn)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isbn").value(isbn))
+                .andExpect(jsonPath("$.rating").value(4));
+    }
 }

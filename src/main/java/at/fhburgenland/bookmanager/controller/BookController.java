@@ -2,6 +2,7 @@
 package at.fhburgenland.bookmanager.controller;
 
 import at.fhburgenland.bookmanager.dto.IsbnRequest;
+import at.fhburgenland.bookmanager.dto.RatingUpdateRequest;
 import at.fhburgenland.bookmanager.model.Book;
 import at.fhburgenland.bookmanager.service.BookService;
 import jakarta.validation.Valid;
@@ -41,6 +42,24 @@ public class BookController {
     }
 
     /**
+     * Aktualisiert nur die Bewertung eines vorhandenen Buchs für einen Benutzer.
+     *
+     * @param userId die ID des Benutzers
+     * @param isbn   die ISBN des Buches
+     * @param request JSON‑Objekt mit dem neuen Bewertungswert (rating)
+     * @return das aktualisierte Buchobjekt mit HTTP 200, oder HTTP 400/404
+     */
+    @PutMapping("/{isbn}")
+    public ResponseEntity<Book> updateBookRating(
+            @PathVariable UUID userId,
+            @PathVariable String isbn,
+            @Valid @RequestBody RatingUpdateRequest request
+    ) {
+        Book updated = bookService.updateBookRating(userId, isbn, request.getRating());
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
      * Liefert die vollständigen Details eines Buches für einen bestimmten Benutzer.
      *
      * @param userId ID des Benutzers
@@ -55,5 +74,4 @@ public class BookController {
         Book book = bookService.getBookByUserIdAndIsbn(userId, isbn);
         return ResponseEntity.ok(book);
     }
-
 }

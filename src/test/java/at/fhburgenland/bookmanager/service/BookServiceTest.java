@@ -152,4 +152,41 @@ class BookServiceTest {
         assertThrows(UserNotFoundException.class,
                 () -> bookService.getBookByUserIdAndIsbn(userId, "1234567890"));
     }
+
+    @Test
+    void updateBookRating_ValidRating_UpdatesSuccessfully() {
+        Book book = Book.builder()
+                .isbn("9780140328721")
+                .rating(2)
+                .user(mockUser)
+                .build();
+
+        mockUser.getBooks().add(book);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        Book updated = bookService.updateBookRating(userId, "9780140328721", 5);
+
+        assertEquals(5, updated.getRating());
+        verify(userRepository).save(mockUser);
+    }
+
+    @Test
+    void updateBookRating_InvalidRating_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        assertThrows(InvalidBookException.class, () -> {
+            bookService.updateBookRating(userId, "9780140328721", 0);
+        });
+    }
+
+    @Test
+    void updateBookRating_BookNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        assertThrows(BookNotFoundException.class, () -> {
+            bookService.updateBookRating(userId, "notfound", 4);
+        });
+    }
+
 }
