@@ -14,11 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.UUID;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -99,5 +98,30 @@ class UserControllerTest {
         mockMvc.perform(get("/users/{id}", notFoundId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
+
+    @Test
+    void updateUser_ValidInput_ReturnsUpdatedUser() throws Exception {
+        UserDto update = new UserDto("Lisa Neu", "lisa.neu@beispiel.at");
+
+        User user = userService.createUser(new UserDto("Lisa Alt", "lisa@beispiel.at"));
+
+        mockMvc.perform(put("/users/" + user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Lisa Neu"))
+                .andExpect(jsonPath("$.email").value("lisa.neu@beispiel.at"));
+    }
+
+    @Test
+    void updateUser_InvalidInput_ReturnsBadRequest() throws Exception {
+        UUID dummyId = UUID.randomUUID();
+        UserDto invalid = new UserDto("", "keineemail");
+
+        mockMvc.perform(put("/users/" + dummyId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest());
     }
 }

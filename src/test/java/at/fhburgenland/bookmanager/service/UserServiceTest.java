@@ -87,4 +87,28 @@ class UserServiceTest {
         assertThrows(UserNotFoundException.class, () -> userService.getUserById(id));
     }
 
+    @Test
+    void updateUser_Vorhanden_AktualisiertDaten() {
+        UUID userId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        User existing = User.builder().id(userId).name("Alt").email("alt@mail.at").build();
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existing));
+        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserDto update = new UserDto("Neu", "neu@mail.at");
+        User updated = userService.updateUser(userId, update);
+
+        assertEquals("Neu", updated.getName());
+        assertEquals("neu@mail.at", updated.getEmail());
+    }
+
+    @Test
+    void updateUser_NichtVorhanden_LöstExceptionAus() {
+        UUID missingId = UUID.fromString("99999999-9999-9999-9999-999999999999");
+        when(userRepository.findById(missingId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+                () -> userService.updateUser(missingId, new UserDto("Test", "test@mail.at")));
+    }
 }
+

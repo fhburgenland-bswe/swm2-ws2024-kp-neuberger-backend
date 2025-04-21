@@ -105,4 +105,49 @@ class UserE2ETest {
         }
     }
 
+    @Test
+    void updateUser_E2E_ReturnsUpdatedUser() {
+        User saved = userRepository.save(User.builder().name("E2E Alt").email("alt@e2e.at").build());
+
+        UserDto updated = new UserDto("E2E Neu", "neu@e2e.at");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UserDto> request = new HttpEntity<>(updated, headers);
+
+        ResponseEntity<User> response = restTemplate.exchange(
+                "http://localhost:" + port + "/users/" + saved.getId(),
+                HttpMethod.PUT,
+                request,
+                User.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getEmail()).isEqualTo("neu@e2e.at");
+    }
+
+    @Test
+    void updateUser_E2E_UserNichtGefunden_Returns404() throws Exception {
+        UserDto updated = new UserDto("Niemand", "niemand@e2e.at");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UserDto> request = new HttpEntity<>(updated, headers);
+
+        UUID nonExistingId = UUID.randomUUID();
+
+        try {
+            restTemplate.exchange(
+                    "http://localhost:" + port + "/users/" + nonExistingId,
+                    HttpMethod.PUT,
+                    request,
+                    String.class
+            );
+            fail("Erwartete HttpClientErrorException wurde nicht geworfen.");
+        } catch (HttpClientErrorException.NotFound ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Benutzer mit ID");
+        }
+    }
 }

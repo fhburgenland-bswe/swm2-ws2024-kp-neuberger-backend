@@ -151,6 +151,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "400":
+          description: Ungültige Eingabedaten (z. B. leeres Feld oder ungültige E-Mail).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
+        "404":
+          description: Benutzer mit der angegebenen ID wurde nicht gefunden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
     delete:
       summary: Löscht einen Benutzer
       parameters:
