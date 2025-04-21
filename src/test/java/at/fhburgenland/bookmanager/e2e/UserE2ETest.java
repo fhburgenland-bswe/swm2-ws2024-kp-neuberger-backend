@@ -150,4 +150,41 @@ class UserE2ETest {
             assertThat(ex.getResponseBodyAsString()).contains("Benutzer mit ID");
         }
     }
+
+    @Test
+    void deleteUser_E2E_LöschtBenutzer() {
+        User user = userRepository.save(User.builder()
+                .name("End2End Delete")
+                .email("e2e-delete@test.at")
+                .build());
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<Void> response = restTemplate.exchange(
+                "http://localhost:" + port + "/users/" + user.getId(),
+                HttpMethod.DELETE,
+                entity,
+                Void.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(userRepository.findById(user.getId())).isEmpty();
+    }
+
+    @Test
+    void deleteUser_E2E_NichtVorhanden_Returns404() {
+        UUID fakeId = UUID.randomUUID();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        try {
+            restTemplate.exchange(
+                    "http://localhost:" + port + "/users/" + fakeId,
+                    HttpMethod.DELETE,
+                    entity,
+                    String.class
+            );
+            fail("Erwarteter 404-Fehler blieb aus");
+        } catch (HttpClientErrorException ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+            assertThat(ex.getResponseBodyAsString()).contains("Benutzer nicht gefunden");
+        }
+    }
 }

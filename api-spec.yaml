@@ -193,6 +193,21 @@ paths:
       responses:
         "204":
           description: Benutzer erfolgreich gelöscht.
+        "404":
+          description: Benutzer wurde nicht gefunden.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
   /users/{userId}/books:
     get:
       summary: Liste der Bücher eines Benutzers abrufen

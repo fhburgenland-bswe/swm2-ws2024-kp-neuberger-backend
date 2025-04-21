@@ -78,4 +78,15 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Löscht einen Benutzer, wenn dieser existiert.
+     *
+     * @param userId ID des zu löschenden Benutzers
+     * @throws UserNotFoundException wenn Benutzer nicht vorhanden ist
+     */
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        userRepository.delete(user);
+    }
 }
