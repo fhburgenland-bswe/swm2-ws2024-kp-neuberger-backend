@@ -14,6 +14,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -293,4 +294,32 @@ class BookE2ETest {
             assertThat(ex.getResponseBodyAsString()).contains("Benutzer nicht gefunden");
         }
     }
+
+    @Test
+    void filterBooksByRating_Valid_ReturnsFilteredList() throws Exception {
+        Book book1 = Book.builder().isbn("111").title("Test 1").rating(3).user(testUser).build();
+        Book book2 = Book.builder().isbn("222").title("Test 2").rating(5).user(testUser).build();
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        ResponseEntity<Book[]> response = restTemplate.getForEntity(
+                getUrl("/users/" + testUser.getId() + "/books?rating=5"), Book[].class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody()[0].getRating()).isEqualTo(5);
+    }
+
+    @Test
+    void filterBooksByRating_InvalidRating_ReturnsBadRequest() {
+        try {
+            restTemplate.getForEntity(
+                    getUrl("/users/" + testUser.getId() + "/books?rating=8"), String.class);
+            fail("Expected BadRequest");
+        } catch (HttpClientErrorException.BadRequest ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(ex.getResponseBodyAsString()).contains("zwischen 1 und 5");
+        }
+    }
+
 }

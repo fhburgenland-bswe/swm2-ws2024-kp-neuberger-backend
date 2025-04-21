@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -177,4 +178,27 @@ public class BookService {
         bookRepository.delete(book);
     }
 
+    /**
+     * Gibt alle Bücher eines Benutzers zurück, optional gefiltert nach Bewertung.
+     *
+     * @param userId Benutzer-ID
+     * @param rating (optional) Bewertung zum Filtern, darf zwischen 1 und 5 liegen
+     * @return Liste der passenden Bücher
+     * @throws UserNotFoundException wenn Benutzer nicht existiert
+     * @throws InvalidBookException  bei ungültigem Rating-Parameter
+     */
+    public List<Book> getBooksByUserIdAndOptionalRating(UUID userId, Integer rating) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (rating != null) {
+            if (rating < 1 || rating > 5) {
+                throw new InvalidBookException("Bewertung muss zwischen 1 und 5 liegen.");
+            }
+            return user.getBooks().stream()
+                    .filter(book -> book.getRating() != null && book.getRating() == rating)
+                    .toList();
+        }
+        return user.getBooks();
+    }
 }

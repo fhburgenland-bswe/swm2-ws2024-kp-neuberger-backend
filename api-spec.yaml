@@ -231,6 +231,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Book"
+        "400":
+          description: Ungültiger Bewertungswert.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
     post:
       summary: Fügt ein neues Buch hinzu
       description: >

@@ -217,4 +217,46 @@ class BookServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
         assertThrows(UserNotFoundException.class, () -> bookService.deleteBookByUserIdAndIsbn(userId, "1234567890"));
     }
+
+    @Test
+    void getBooksByUserIdAndOptionalRating_NoRating_ReturnsAllBooks() {
+        Book book1 = Book.builder().isbn("111").title("Buch 1").rating(3).build();
+        Book book2 = Book.builder().isbn("222").title("Buch 2").rating(5).build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.getBooksByUserIdAndOptionalRating(userId, null);
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void getBooksByUserIdAndOptionalRating_ValidRating_ReturnsMatchingBooks() {
+        Book book1 = Book.builder().isbn("111").title("Buch 1").rating(2).build();
+        Book book2 = Book.builder().isbn("222").title("Buch 2").rating(5).build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.getBooksByUserIdAndOptionalRating(userId, 2);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getRating()).isEqualTo(2);
+    }
+
+    @Test
+    void getBooksByUserIdAndOptionalRating_InvalidRating_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        assertThrows(InvalidBookException.class,
+                () -> bookService.getBooksByUserIdAndOptionalRating(userId, 10));
+    }
+
+    @Test
+    void getBooksByUserIdAndOptionalRating_UserNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class,
+                () -> bookService.getBooksByUserIdAndOptionalRating(userId, 3));
+    }
+
 }

@@ -94,7 +94,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleInvalidBook(InvalidBookException ex) {
         ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        detail.setTitle("Ungültige ISBN");
+        detail.setTitle(ex.getMessage().contains("Bewertung") ? "Ungültige Bewertung" : "Ungültige ISBN");
         detail.setDetail(ex.getMessage());
         return detail;
     }
