@@ -61,4 +61,21 @@ public class UserService {
                 .findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
+
+    /**
+     * Aktualisiert einen bestehenden Benutzer anhand der ID.
+     *
+     * @param userId ID des zu aktualisierenden Benutzers
+     * @param userDto Neue Daten für den Benutzer
+     * @return Der aktualisierte Benutzer
+     * @throws UserNotFoundException wenn der Benutzer nicht existiert
+     */
+    public User updateUser(UUID userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        user.setName(userDto.getName());
+        user.setEmail(userDto.getEmail());
+        return userRepository.save(user);
+    }
+
 }

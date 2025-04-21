@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
@@ -104,4 +105,29 @@ class UserIntegrationTest {
                 .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
     }
 
+    @Test
+    void updateUser_ReturnsUpdatedData() throws Exception {
+        User user = userRepository.save(User.builder().name("Altname").email("alt@mail.at").build());
+
+        UserDto updated = new UserDto("Neu", "neu@mail.at");
+
+        mockMvc.perform(put("/users/" + user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Neu"))
+                .andExpect(jsonPath("$.email").value("neu@mail.at"));
+    }
+
+    @Test
+    void updateUser_NichtGefunden_Returns404() throws Exception {
+        UserDto update = new UserDto("Fake", "fake@mail.at");
+        UUID nichtExistierendeId = UUID.randomUUID();
+
+        mockMvc.perform(put("/users/" + nichtExistierendeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
 }

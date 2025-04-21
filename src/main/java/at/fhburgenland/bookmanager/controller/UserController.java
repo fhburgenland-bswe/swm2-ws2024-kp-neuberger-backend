@@ -54,4 +54,17 @@ public class UserController {
         User user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
+
+    /**
+     * Aktualisiert die Profildaten eines Benutzers.
+     *
+     * @param userId ID des Benutzers
+     * @param userDto Neue Profildaten
+     * @return Aktualisierter Benutzer
+     */
+    @PutMapping("/{userId}")
+    public ResponseEntity<User> updateUser(@PathVariable UUID userId, @Valid @RequestBody UserDto userDto) {
+        User updatedUser = userService.updateUser(userId, userDto);
+        return ResponseEntity.ok(updatedUser);
+    }
 }
