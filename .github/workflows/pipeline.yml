@@ -170,4 +170,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/bookmanager-backend:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
