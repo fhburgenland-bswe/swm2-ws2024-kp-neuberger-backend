@@ -47,6 +47,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+        "400":
+          description: Ungültige Eingabedaten (z. B. leere Felder, ungültiges Format).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
+        "409":
+          description: Ein Benutzer mit dieser E-Mail existiert bereits.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: integer
+                  detail:
+                    type: string
   /users/{userId}:
     get:
       summary: Benutzerdetails abrufen
