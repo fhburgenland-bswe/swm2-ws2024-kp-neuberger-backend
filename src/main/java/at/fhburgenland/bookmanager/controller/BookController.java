@@ -105,4 +105,31 @@ public class BookController {
         List<Book> books = bookService.getBooksByUserIdAndOptionalRating(userId, rating);
         return ResponseEntity.ok(books);
     }
+
+    /**
+     * Sucht Bücher eines Benutzers anhand von optionalen Kriterien.
+     *
+     * @param userId ID des Benutzers
+     * @param title Optionaler Filtern nach Titel
+     * @param author Optionaler Filtern nach Autor
+     * @param year Optionaler Filtern nach Veröffentlichungsjahr
+     * @return Gefilterte Liste von Büchern
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Book>> searchBooks(
+            @PathVariable String userId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) Integer year
+    ) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(userId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Book> books = bookService.searchBooks(uuid, title, author, year);
+        return ResponseEntity.ok(books);
+    } 
 }

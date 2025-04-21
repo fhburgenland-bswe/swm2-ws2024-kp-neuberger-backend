@@ -201,4 +201,24 @@ public class BookService {
         }
         return user.getBooks();
     }
+
+    /**
+     * Sucht Bücher eines Benutzers anhand optionaler Kriterien.
+     *
+     * @param userId Benutzer-ID
+     * @param title Optionaler Titel
+     * @param author Optionaler Autor
+     * @param year Optionales Jahr
+     * @return Liste der passenden Bücher
+     */
+    public List<Book> searchBooks(UUID userId, String title, String author, Integer year) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        return user.getBooks().stream()
+                .filter(book -> title == null || book.getTitle() != null && book.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(book -> author == null || book.getAuthors() != null && book.getAuthors().stream().anyMatch(a -> a.toLowerCase().contains(author.toLowerCase())))
+                .filter(book -> year == null || (book.getPublishedDate() != null && book.getPublishedDate().contains(year.toString())))
+                .toList();
+    }
+
 }

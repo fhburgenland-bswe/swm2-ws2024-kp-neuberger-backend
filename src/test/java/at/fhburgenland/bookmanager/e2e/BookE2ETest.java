@@ -322,4 +322,50 @@ class BookE2ETest {
         }
     }
 
+    @Test
+    void searchBooks_WithAllFilters_ReturnsMatchingBook() {
+        Book book = Book.builder()
+                .isbn("111")
+                .title("Der Herr der Ringe")
+                .authors(List.of("J.R.R. Tolkien"))
+                .publishedDate("1954")
+                .user(testUser)
+                .build();
+        testUser.setBooks(List.of(book));
+        userRepository.save(testUser);
+
+        ResponseEntity<Book[]> response = restTemplate.getForEntity(
+                getUrl("/users/" + testUser.getId() + "/books/search?title=Ringe&author=Tolkien&year=1954"),
+                Book[].class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody()[0].getTitle()).contains("Ringe");
+    }
+
+    @Test
+    void searchBooks_WithoutFilters_ReturnsAllBooks() {
+        Book book1 = Book.builder().isbn("111").title("Testbuch A").user(testUser).build();
+        Book book2 = Book.builder().isbn("222").title("Testbuch B").user(testUser).build();
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        ResponseEntity<Book[]> response = restTemplate.getForEntity(
+                getUrl("/users/" + testUser.getId() + "/books/search"),
+                Book[].class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void searchBooks_InvalidUserId_ReturnsBadRequest() {
+        try {
+            restTemplate.getForEntity(getUrl("/users/not-a-uuid/books/search?title=test"), String.class);
+            fail("Expected 400 Bad Request");
+        } catch (HttpClientErrorException.BadRequest ex) {
+            assertThat(ex.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

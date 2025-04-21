@@ -255,4 +255,53 @@ class BookIntegrationTest {
                 .andExpect(jsonPath("$.detail").value(containsString("zwischen 1 und 5")));
     }
 
+    @Test
+    void searchBooks_ByTitleAndAuthorAndYear_ReturnsFilteredResult() throws Exception {
+        Book book1 = Book.builder()
+                .isbn("111")
+                .title("Der Hobbit")
+                .authors(List.of("J.R.R. Tolkien"))
+                .publishedDate("1937")
+                .user(testUser)
+                .build();
+        Book book2 = Book.builder()
+                .isbn("222")
+                .title("Der Herr der Ringe")
+                .authors(List.of("J.R.R. Tolkien"))
+                .publishedDate("1954")
+                .user(testUser)
+                .build();
+
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        mockMvc.perform(get("/users/" + testUser.getId() + "/books/search")
+                        .param("title", "Ringe")
+                        .param("author", "Tolkien")
+                        .param("year", "1954"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].isbn").value("222"));
+    }
+
+    @Test
+    void searchBooks_InvalidUUID_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/users/not-a-valid-uuid/books/search")
+                        .param("title", "Test"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void searchBooks_NoFilters_ReturnsAllBooks() throws Exception {
+        Book book1 = Book.builder().isbn("123").title("Testbuch 1").user(testUser).build();
+        Book book2 = Book.builder().isbn("456").title("Testbuch 2").user(testUser).build();
+
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        mockMvc.perform(get("/users/" + testUser.getId() + "/books/search"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
 }

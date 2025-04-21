@@ -175,4 +175,37 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].rating").value(2));
     }
+
+    @Test
+    void searchBooks_WithQueryParams_ReturnsFilteredBooks() throws Exception {
+        Book book = Book.builder()
+                .isbn("1234567890")
+                .title("Der Hobbit")
+                .authors(List.of("J.R.R. Tolkien"))
+                .publishedDate("1937")
+                .user(testUser)
+                .build();
+
+        testUser.setBooks(List.of(book));
+        userRepository.save(testUser); // das ist wichtig – persistiert das Buch via Cascade
+
+        mockMvc.perform(get("/users/{userId}/books/search", testUser.getId())
+                        .param("title", "Hobbit")
+                        .param("author", "Tolkien")
+                        .param("year", "1937"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].isbn").value("1234567890"))
+                .andExpect(jsonPath("$[0].title").value("Der Hobbit"))
+                .andExpect(jsonPath("$[0].authors[0]").value("J.R.R. Tolkien"))
+                .andExpect(jsonPath("$[0].publishedDate").value("1937"));
+    }
+
+    @Test
+    void searchBooks_InvalidUUID_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(get("/users/not-a-uuid/books/search")
+                        .param("title", "irgendwas"))
+                .andExpect(status().isBadRequest());
+    }
+
 }
