@@ -311,6 +311,21 @@ paths:
           name: rating
           schema:
             type: integer
+        - in: query
+          name: title
+          schema:
+            type: string
+          description: Filtert Bücher, deren Titel diesen Text enthält.
+        - in: query
+          name: author
+          schema:
+            type: string
+          description: Filtert Bücher nach Autorennamen (teilweise Übereinstimmung).
+        - in: query
+          name: year
+          schema:
+            type: integer
+          description: Filtert Bücher nach Veröffentlichungsjahr.
       responses:
         "200":
           description: Gefilterte Bücherliste.
@@ -320,6 +335,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Book"
+        "400":
+          description: Ungültige Anfrageparameter (z. B. fehlerhafte UUID oder unzulässige Query-Parameter).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
   /users/{userId}/books/{isbn}:
     get:
       summary: Buchdetails abrufen

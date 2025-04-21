@@ -259,4 +259,61 @@ class BookServiceTest {
                 () -> bookService.getBooksByUserIdAndOptionalRating(userId, 3));
     }
 
+    @Test
+    void searchBooks_WithAllFilters_ReturnsMatchingBooks() {
+        Book book1 = Book.builder().isbn("111").title("Der Hobbit").authors(List.of("Tolkien")).publishedDate("1937").build();
+        Book book2 = Book.builder().isbn("222").title("Der Herr der Ringe").authors(List.of("Tolkien")).publishedDate("1954").build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.searchBooks(userId, "Herr", "Tolkien", 1954);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle()).contains("Herr");
+    }
+
+    @Test
+    void searchBooks_WithoutFilters_ReturnsAllBooks() {
+        Book book1 = Book.builder().isbn("111").title("Buch A").build();
+        Book book2 = Book.builder().isbn("222").title("Buch B").build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.searchBooks(userId, null, null, null);
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void searchBooks_UserNotFound_ThrowsException() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> bookService.searchBooks(userId, null, null, null));
+    }
+
+    @Test
+    void searchBooks_FilterByAuthorOnly_ReturnsCorrectBooks() {
+        Book book1 = Book.builder().isbn("111").title("A").authors(List.of("Max Mustermann")).build();
+        Book book2 = Book.builder().isbn("222").title("B").authors(List.of("Erika Musterfrau")).build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.searchBooks(userId, null, "Erika", null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getAuthors()).contains("Erika Musterfrau");
+    }
+
+    @Test
+    void searchBooks_FilterByYear_ReturnsCorrectBooks() {
+        Book book1 = Book.builder().isbn("111").title("A").publishedDate("2020").build();
+        Book book2 = Book.builder().isbn("222").title("B").publishedDate("2019").build();
+        mockUser.setBooks(List.of(book1, book2));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        List<Book> result = bookService.searchBooks(userId, null, null, 2020);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPublishedDate()).contains("2020");
+    }
 }
