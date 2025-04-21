@@ -16,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
@@ -159,5 +161,18 @@ class BookControllerTest {
         mockMvc.perform(delete("/users/" + unknownUser + "/books/9780140328721"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
+
+    @Test
+    void getBooksByRating_FilterWorksCorrectly() throws Exception {
+        Book book1 = Book.builder().isbn("111").title("Buch 1").rating(2).user(testUser).build();
+        Book book2 = Book.builder().isbn("222").title("Buch 2").rating(5).user(testUser).build();
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        mockMvc.perform(get("/users/{userId}/books?rating=2", testUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].rating").value(2));
     }
 }

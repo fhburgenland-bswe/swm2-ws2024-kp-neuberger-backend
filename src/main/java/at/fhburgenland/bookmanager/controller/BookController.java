@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -89,5 +90,19 @@ public class BookController {
     ) {
         bookService.deleteBookByUserIdAndIsbn(userId, isbn);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Gibt die Liste der Bücher eines Benutzers zurück, optional gefiltert nach Bewertung.
+     *
+     * @param userId Die ID des Benutzers
+     * @param rating (Optional) Bewertungsfilter (1-5)
+     * @return Liste der Bücher
+     */
+    @GetMapping
+    public ResponseEntity<List<Book>> getBooks(@PathVariable UUID userId,
+                                               @RequestParam(required = false) Integer rating) {
+        List<Book> books = bookService.getBooksByUserIdAndOptionalRating(userId, rating);
+        return ResponseEntity.ok(books);
     }
 }

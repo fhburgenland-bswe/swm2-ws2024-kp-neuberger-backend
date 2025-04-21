@@ -228,4 +228,31 @@ class BookIntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
     }
+
+    @Test
+    void getBooks_FilterByRating_ReturnsOnlyMatchingBooks() throws Exception {
+        Book book1 = Book.builder().isbn("111").title("Buch 1").rating(3).user(testUser).build();
+        Book book2 = Book.builder().isbn("222").title("Buch 2").rating(5).user(testUser).build();
+
+        testUser.setBooks(List.of(book1, book2));
+        userRepository.save(testUser);
+
+        mockMvc.perform(get("/users/" + testUser.getId() + "/books")
+                        .param("rating", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].isbn").value("222"));
+    }
+
+    @Test
+    void getBooks_InvalidRating_ReturnsBadRequest() throws Exception {
+        userRepository.save(testUser);
+
+        mockMvc.perform(get("/users/" + testUser.getId() + "/books")
+                        .param("rating", "7"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Ungültige Bewertung"))
+                .andExpect(jsonPath("$.detail").value(containsString("zwischen 1 und 5")));
+    }
+
 }
