@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +49,13 @@ class UserServiceTest {
 
     @Test
     void createUser_EmailBereitsVorhanden_LöstExceptionAus() {
-        when(userRepository.findByEmail(validUserDto.getEmail())).thenReturn(Optional.of(new User()));
+        when(userRepository.findByEmail(validUserDto.getEmail())).thenReturn(Optional.of(User.builder()
+                .id(UUID.randomUUID())
+                .name("Already Exists")
+                .email(validUserDto.getEmail())
+                .books(new ArrayList<>())
+                .build())
+        );
 
         assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(validUserDto));
     }
@@ -70,7 +77,13 @@ class UserServiceTest {
     @Test
     void getUserById_Vorhanden_ReturnsUser() {
         UUID id = UUID.randomUUID();
-        User mock = new User(id, "Service Test", "service@test.at");
+        User mock = User.builder()
+                .id(id)
+                .name("Service Test")
+                .email("service@test.at")
+                .books(new ArrayList<>()) // <<< wichtig!
+                .build();
+
         when(userRepository.findById(id)).thenReturn(Optional.of(mock));
 
         User result = userService.getUserById(id);
@@ -78,6 +91,7 @@ class UserServiceTest {
         assertEquals("Service Test", result.getName());
         assertEquals("service@test.at", result.getEmail());
     }
+
 
     @Test
     void getUserById_NichtGefunden_WirftException() {

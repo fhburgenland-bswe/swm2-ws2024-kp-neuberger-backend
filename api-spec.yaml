@@ -233,7 +233,11 @@ paths:
                   $ref: "#/components/schemas/Book"
     post:
       summary: Fügt ein neues Buch hinzu
-      description: Fügt ein Buch via ISBN hinzu; Details von der OpenLibrary API.
+      description: >
+        Fügt ein Buch anhand der ISBN zum Benutzerprofil hinzu.
+        Die Buchdetails (inkl. Titel, Beschreibung, Verlag usw.) werden über die OpenLibrary API abgerufen.
+        Das zugehörige Coverbild in hoher Auflösung (Large) wird über die OpenLibrary Covers API referenziert
+        und unter `coverUrl` gespeichert.
       parameters:
         - in: path
           name: userId
@@ -258,6 +262,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Book"
+        "400":
+          description: Ungültige ISBN oder fehlende Felder.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Fehler beim Abrufen der Buchdaten von OpenLibrary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
   /users/{userId}/books/search:
     get:
       summary: Suche und Filtere Bücher
@@ -505,6 +527,17 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Book"
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
     Book:
       type: object
       properties:

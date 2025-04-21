@@ -80,4 +80,22 @@ public class GlobalExceptionHandler {
         detail.setDetail(ex.getMessage());
         return detail;
     }
+
+    /**
+     * Behandelt ungültige ISBNs, die im BookService geworfen werden.
+     *
+     * Diese Methode fängt die InvalidBookException ab
+     * und liefert ein strukturieres ProblemDetail-Objekt mit Status 400 (Bad Request).
+     *
+     * @param ex Die InvalidBookException mit dem Invalid‑ISBN‑Text
+     * @return Ein ProblemDetail mit Status 400 und Titel "Ungültige ISBN"
+     */
+    @ExceptionHandler(InvalidBookException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleInvalidBook(InvalidBookException ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setTitle("Ungültige ISBN");
+        detail.setDetail(ex.getMessage());
+        return detail;
+    }
 }
