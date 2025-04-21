@@ -1,6 +1,7 @@
 package at.fhburgenland.bookmanager.service;
 
 import at.fhburgenland.bookmanager.dto.UserDto;
+import at.fhburgenland.bookmanager.exception.UserNotFoundException;
 import at.fhburgenland.bookmanager.model.User;
 import at.fhburgenland.bookmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import at.fhburgenland.bookmanager.exception.UserAlreadyExistsException;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service zur Handhabung der Benutzerlogik.
@@ -45,5 +47,18 @@ public class UserService {
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    /**
+     * Gibt einen Benutzer anhand seiner ID zurück oder wirft, wenn nicht gefunden.
+     *
+     * @param id Die UUID des Benutzers
+     * @return der gefundene User
+     * @throws UserNotFoundException wenn kein User existiert
+     */
+    public User getUserById(UUID id) {
+        return userRepository
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

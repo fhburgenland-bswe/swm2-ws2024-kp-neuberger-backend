@@ -1,8 +1,11 @@
 package at.fhburgenland.bookmanager.controller;
 
 import at.fhburgenland.bookmanager.dto.UserDto;
+import at.fhburgenland.bookmanager.model.User;
+import at.fhburgenland.bookmanager.repository.UserRepository;
 import at.fhburgenland.bookmanager.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -11,6 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,6 +38,13 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void cleanDb() {
+        userRepository.deleteAll();
+    }
     @Test
     void createUser_ValidInput_ReturnsCreated() throws Exception {
         UserDto userDto = new UserDto("Max Mustermann", "max@beispiel.de");
@@ -63,5 +76,28 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].email").value("lisa@beispiel.at"))
                 .andExpect(jsonPath("$[1].email").value("tom@beispiel.at"));
+    }
+
+    @Test
+    void getUserById_Vorhanden_ReturnsOk() throws Exception {
+        UserDto dto = new UserDto("Controller User", "controller@beispiel.at");
+        User saved = userService.createUser(dto);
+
+        mockMvc.perform(get("/users/" + saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("controller@beispiel.at"));
+    }
+
+    @Test
+    void getUserById_NichtGefunden_ReturnsNotFound() throws Exception {
+        UserDto dto = new UserDto("Controller User", "controller@beispiel.at");
+        User saved = userService.createUser(dto);
+        UUID notFoundId = UUID.randomUUID();
+        while (notFoundId.equals(saved.getId())) {
+            notFoundId = UUID.randomUUID();
+        }
+        mockMvc.perform(get("/users/{id}", notFoundId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
     }
 }

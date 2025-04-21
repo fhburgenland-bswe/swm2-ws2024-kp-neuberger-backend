@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.mock;
@@ -77,8 +78,30 @@ class UserIntegrationTest {
     }
 
     @Test
-    void getAllUsers_UnexpectedException_ReturnsInternalServerError() throws Exception {
+    void getAllUsers_UnexpectedException_ReturnsInternalServerError() {
         UserService mockService = mock(UserService.class);
         when(mockService.getAllUsers()).thenThrow(new RuntimeException("Unerwarteter Fehler"));
     }
+
+    @Test
+    void getUserById_Vorhanden_ReturnsOk() throws Exception {
+        User saved = userRepository.save(
+                User.builder()
+                        .name("Int User")
+                        .email("int@user.at")
+                        .build()
+        );
+
+        mockMvc.perform(get("/users/" + saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("int@user.at"));
+    }
+
+    @Test
+    void getUserById_NichtGefunden_ReturnsNotFound() throws Exception {
+        mockMvc.perform(get("/users/" + UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Benutzer nicht gefunden"));
+    }
+
 }

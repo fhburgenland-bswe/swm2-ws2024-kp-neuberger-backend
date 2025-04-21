@@ -59,4 +59,25 @@ public class GlobalExceptionHandler {
         detail.setDetail("Ein unerwarteter Fehler ist aufgetreten.");
         return detail;
     }
+
+    /**
+     * Behandelt den Fall, dass ein Benutzer anhand seiner ID nicht gefunden wird.
+     *
+     * Diese Methode fängt die ausgelöste UserNotFoundException ab
+     * und erzeugt ein standardisiertes ProblemDetail-Objekt mit HTTP-Status 404 (Not Found).
+     * Der Titel wird auf "Benutzer nicht gefunden" gesetzt, und das Detail enthält
+     * die genaue Fehlermeldung aus der Exception.
+     *
+     * @param ex Die ausgelöste UserNotFoundException, die angibt, welche ID nicht gefunden wurde
+     * @return Ein ProblemDetail-Objekt mit Status 404, Titel "Benutzer nicht gefunden"
+     *         und Detail-Nachricht aus der Exception
+     */
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleUserNotFound(UserNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        detail.setTitle("Benutzer nicht gefunden");
+        detail.setDetail(ex.getMessage());
+        return detail;
+    }
 }
