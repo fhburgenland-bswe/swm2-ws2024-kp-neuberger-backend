@@ -304,4 +304,33 @@ class BookIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(2));
     }
 
+    @Test
+    void updateBook_DetailsOnlyCertainFieldsAreUpdated() throws Exception {
+        String isbn = "1234567890";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Original Title")
+                .description("Old Desc")
+                .coverUrl("old-url.jpg")
+                .user(testUser)
+                .build();
+
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String json = """
+    {
+      "title": "Updated Title",
+      "coverUrl": "https://updated"
+    }
+    """;
+
+        mockMvc.perform(put("/users/" + testUser.getId() + "/books/" + isbn + "/details")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Updated Title"))
+                .andExpect(jsonPath("$.coverUrl").value("https://updated"))
+                .andExpect(jsonPath("$.description").value("Old Desc"));
+    }
 }

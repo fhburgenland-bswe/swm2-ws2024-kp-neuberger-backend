@@ -368,4 +368,41 @@ class BookE2ETest {
         }
     }
 
+    @Test
+    void updateBook_DetailsValid_ReturnsUpdatedBook() throws Exception {
+        Book book = Book.builder()
+                .isbn("1234567890")
+                .title("Alt")
+                .description("Original")
+                .coverUrl("oldUrl")
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String json = """
+    {
+      "title": "Neuer Titel",
+      "description": "Neue Beschreibung",
+      "coverUrl": "https://neu"
+    }
+    """;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(json, headers);
+
+        ResponseEntity<Book> response = restTemplate.exchange(
+                getUrl("/users/" + testUser.getId() + "/books/1234567890/details"),
+                HttpMethod.PUT,
+                entity,
+                Book.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getTitle()).isEqualTo("Neuer Titel");
+        assertThat(response.getBody().getDescription()).isEqualTo("Neue Beschreibung");
+        assertThat(response.getBody().getCoverUrl()).isEqualTo("https://neu");
+    }
 }

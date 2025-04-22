@@ -1,5 +1,6 @@
 package at.fhburgenland.bookmanager.service;
 
+import at.fhburgenland.bookmanager.dto.BookUpdateRequest;
 import at.fhburgenland.bookmanager.exception.BookNotFoundException;
 import at.fhburgenland.bookmanager.exception.InvalidBookException;
 import at.fhburgenland.bookmanager.exception.UserNotFoundException;
@@ -219,6 +220,24 @@ public class BookService {
                 .filter(book -> author == null || book.getAuthors() != null && book.getAuthors().stream().anyMatch(a -> a.toLowerCase().contains(author.toLowerCase())))
                 .filter(book -> year == null || (book.getPublishedDate() != null && book.getPublishedDate().contains(year.toString())))
                 .toList();
+    }
+
+    public Book updateBookDetails(UUID userId, String isbn, BookUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        Book book = user.getBooks().stream()
+                .filter(b -> b.getIsbn().equalsIgnoreCase(isbn))
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException(isbn));
+
+        // Nur erlaubte Felder überschreiben
+        if (request.getTitle() != null) book.setTitle(request.getTitle());
+        if (request.getAuthors() != null) book.setAuthors(request.getAuthors());
+        if (request.getDescription() != null) book.setDescription(request.getDescription());
+        if (request.getCoverUrl() != null) book.setCoverUrl(request.getCoverUrl());
+
+        return bookRepository.save(book);
     }
 
 }
