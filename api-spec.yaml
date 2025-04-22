@@ -475,14 +475,30 @@ paths:
             type: string
           required: true
       responses:
-        "200":
-          description: Liste der Rezensionen.
+        "201":
+          description: Rezension erstellt.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Review"
+                $ref: "#/components/schemas/Review"
+        "400":
+          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer oder Buch nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
     post:
       summary: Rezension hinzufügen
       description: Erstellt Bewertung und Text für ein Buch.
@@ -518,6 +534,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Review"
+        "400":
+          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer oder Buch nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
   /users/{userId}/books/{isbn}/reviews/{reviewId}:
     put:
       summary: Rezension aktualisieren
@@ -549,12 +583,30 @@ paths:
                 reviewText:
                   type: string
       responses:
-        "200":
-          description: Rezension aktualisiert.
+        "201":
+          description: Rezension erstellt.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Review"
+        "400":
+          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer oder Buch nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
     delete:
       summary: Rezension löschen
       parameters:
@@ -576,6 +628,18 @@ paths:
       responses:
         "204":
           description: Rezension gelöscht.
+        "404":
+          description: Benutzer, Buch oder Rezension nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
 components:
   schemas:
     User:
@@ -654,6 +718,9 @@ components:
           type: integer
         reviewText:
           type: string
+        bookId:
+          type: string
+          format: uuid
       required:
         - id
         - rating

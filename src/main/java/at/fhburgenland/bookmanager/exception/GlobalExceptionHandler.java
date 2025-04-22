@@ -119,4 +119,24 @@ public class GlobalExceptionHandler {
         detail.setDetail(ex.getMessage());
         return detail;
     }
+
+    /**
+     * Behandelt den Fall, dass eine Rezension anhand ihrer ID nicht gefunden wurde.
+     *
+     * Diese Methode fängt die ausgelöste {@link ReviewNotFoundException} ab
+     * und erstellt ein standardisiertes {@link ProblemDetail}-Objekt mit HTTP-Status 404 (Not Found).
+     * Der Titel wird auf "Rezension nicht gefunden" gesetzt und das Detail enthält
+     * die genaue Fehlermeldung aus der Exception.
+     *
+     * @param ex Die ausgelöste {@link ReviewNotFoundException}, die angibt, welche Rezension nicht gefunden wurde
+     * @return Ein {@link ProblemDetail}-Objekt mit Status 404, Titel "Rezension nicht gefunden"
+     *         und Detail-Nachricht aus der Exception
+     */
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ProblemDetail handleReviewNotFound(ReviewNotFoundException ex) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        detail.setTitle("Rezension nicht gefunden");
+        detail.setDetail(ex.getMessage());
+        return detail;
+    }
 }

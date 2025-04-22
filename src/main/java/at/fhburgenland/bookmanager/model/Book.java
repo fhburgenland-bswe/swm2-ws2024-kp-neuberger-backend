@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -56,4 +57,11 @@ public class Book {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
     private User user;
+
+    /**
+     * Liste aller Rezensionen zu diesem Buch.
+     */
+    @Builder.Default
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Review> reviews = new ArrayList<>();
 }
