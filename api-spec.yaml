@@ -460,6 +460,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /users/{userId}/books/{isbn}/details:
+    put:
+      summary: Bearbeite Buchinformationen manuell
+      description: |
+        Erlaubt Benutzern, bestimmte Felder eines Buches zu bearbeiten (Titel, Autoren, Beschreibung, Cover-URL).
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: isbn
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                authors:
+                  type: array
+                  items:
+                    type: string
+                description:
+                  type: string
+                coverUrl:
+                  type: string
+      responses:
+        "200":
+          description: Buch erfolgreich aktualisiert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Ungültige Felder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Buch oder Benutzer nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
   /users/{userId}/books/{isbn}/reviews:
     get:
       summary: Alle Rezensionen eines Buches

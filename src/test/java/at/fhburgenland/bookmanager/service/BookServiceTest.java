@@ -1,5 +1,6 @@
 package at.fhburgenland.bookmanager.service;
 
+import at.fhburgenland.bookmanager.dto.BookUpdateRequest;
 import at.fhburgenland.bookmanager.exception.BookNotFoundException;
 import at.fhburgenland.bookmanager.exception.InvalidBookException;
 import at.fhburgenland.bookmanager.exception.UserNotFoundException;
@@ -189,6 +190,32 @@ class BookServiceTest {
             bookService.updateBookRating(userId, "notfound", 4);
         });
     }
+
+    @Test
+    void updateBookDetails_ValidFields_UpdatesOnlyProvidedFields() {
+        Book book = Book.builder()
+                .isbn("123")
+                .title("Alt")
+                .description("Alt Desc")
+                .coverUrl("oldUrl")
+                .user(mockUser)
+                .build();
+
+        mockUser.getBooks().add(book);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookUpdateRequest request = new BookUpdateRequest();
+        request.setTitle("Neu");
+        request.setCoverUrl("https://neu");
+
+        Book result = bookService.updateBookDetails(userId, "123", request);
+
+        assertThat(result.getTitle()).isEqualTo("Neu");
+        assertThat(result.getCoverUrl()).isEqualTo("https://neu");
+        assertThat(result.getDescription()).isEqualTo("Alt Desc"); // nicht verändert
+    }
+
 
     @Test
     void deleteBookByUserIdAndIsbn_BookExists_DeletesSuccessfully() {

@@ -132,6 +132,34 @@ class BookControllerTest {
     }
 
     @Test
+    void updateBookDetails_ValidRequest_ReturnsUpdatedBook() throws Exception {
+        String isbn = "123";
+        Book book = Book.builder()
+                .isbn(isbn)
+                .title("Updated")
+                .description("Updated desc")
+                .user(testUser)
+                .build();
+        testUser.getBooks().add(book);
+        userRepository.save(testUser);
+
+        String json = """
+    {
+      "title": "Neuer Titel",
+      "description": "Neue Beschreibung",
+      "coverUrl": "https://neu"
+    }
+    """;
+
+        mockMvc.perform(put("/users/{userId}/books/{isbn}/details", testUser.getId(), isbn)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Neuer Titel"))
+                .andExpect(jsonPath("$.description").value("Neue Beschreibung"));
+    }
+
+    @Test
     void deleteBook_ExistingBook_ReturnsNoContent() throws Exception {
         String isbn = "9780140328721";
         Book book = Book.builder()

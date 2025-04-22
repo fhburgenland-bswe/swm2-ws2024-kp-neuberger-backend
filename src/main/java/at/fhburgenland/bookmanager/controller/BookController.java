@@ -1,6 +1,7 @@
 // src/main/java/at/fhburgenland/bookmanager/controller/BookController.java
 package at.fhburgenland.bookmanager.controller;
 
+import at.fhburgenland.bookmanager.dto.BookUpdateRequest;
 import at.fhburgenland.bookmanager.dto.IsbnRequest;
 import at.fhburgenland.bookmanager.dto.RatingUpdateRequest;
 import at.fhburgenland.bookmanager.model.Book;
@@ -59,6 +60,25 @@ public class BookController {
         Book updated = bookService.updateBookRating(userId, isbn, request.getRating());
         return ResponseEntity.ok(updated);
     }
+
+    /**
+     * Aktualisiert bestimmte Buchinformationen wie Titel, Autoren, Beschreibung oder Cover-URL.
+     *
+     * @param userId Benutzer-ID
+     * @param isbn   ISBN des Buchs
+     * @param request Felder, die aktualisiert werden sollen
+     * @return Das aktualisierte Buch
+     */
+    @PutMapping("/{isbn}/details")
+    public ResponseEntity<Book> updateBookDetails(
+            @PathVariable UUID userId,
+            @PathVariable String isbn,
+            @Valid @RequestBody BookUpdateRequest request
+    ) {
+        Book updated = bookService.updateBookDetails(userId, isbn, request);
+        return ResponseEntity.ok(updated);
+    }
+
 
     /**
      * Liefert die vollständigen Details eines Buches für einen bestimmten Benutzer.
