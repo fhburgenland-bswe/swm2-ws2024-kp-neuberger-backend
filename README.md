@@ -203,7 +203,16 @@ Alle wichtigen Prozesse werden automatisiert über GitHub Actions:
 - **Linter für Dockerfile**
 
 ---
+## Lizenz
 
+Dieses Projekt wird unter der **Apache License, Version 2.0** veröffentlicht.
+
+Die Lizenz regelt, dass der Quellcode frei genutzt, verändert und weiterverbreitet werden darf – auch für kommerzielle Zwecke. Gleichzeitig wird durch diese Open-Source-Lizenz sichergestellt, dass die ursprünglichen Urheber genannt werden und die Lizenzbedingungen erhalten bleiben. Dies schafft rechtliche Klarheit und Vertrauen sowohl für Entwickler als auch für Nutzer der Software.
+
+Weitere Informationen findest du in der Datei `LICENSE` im Projektverzeichnis oder unter:  
+[https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+---
 ## Kontakt
 
 Projektleitung: Lukas Neuberger  
@@ -211,3 +220,4 @@ Studiengang: Software Engineering und vernetzte Systeme
 Hochschule: FH Burgenland
 
 ---
+
