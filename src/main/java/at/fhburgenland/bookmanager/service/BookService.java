@@ -197,7 +197,7 @@ public class BookService {
                 throw new InvalidBookException("Bewertung muss zwischen 1 und 5 liegen.");
             }
             return user.getBooks().stream()
-                    .filter(book -> book.getRating() != null && book.getRating() == rating)
+                    .filter(book -> book.getRating() != null && book.getRating().equals(rating))
                     .toList();
         }
         return user.getBooks();
@@ -225,19 +225,14 @@ public class BookService {
     public Book updateBookDetails(UUID userId, String isbn, BookUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
-
         Book book = user.getBooks().stream()
                 .filter(b -> b.getIsbn().equalsIgnoreCase(isbn))
                 .findFirst()
                 .orElseThrow(() -> new BookNotFoundException(isbn));
-
-        // Nur erlaubte Felder überschreiben
         if (request.getTitle() != null) book.setTitle(request.getTitle());
         if (request.getAuthors() != null) book.setAuthors(request.getAuthors());
         if (request.getDescription() != null) book.setDescription(request.getDescription());
         if (request.getCoverUrl() != null) book.setCoverUrl(request.getCoverUrl());
-
         return bookRepository.save(book);
     }
-
 }
