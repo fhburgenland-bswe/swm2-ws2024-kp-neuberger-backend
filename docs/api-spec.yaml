@@ -9,6 +9,7 @@ info:
 servers:
   - url: http://localhost:8080
     description: Basis-URL ohne Pfad-Prefix
+
 paths:
   /users:
     get:
@@ -24,20 +25,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/User"
         "500":
-          description: Interner Serverfehler – z. B. bei unerwarteten Laufzeitfehlern.
+          description: Interner Serverfehler.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+
     post:
       summary: Erstellt einen neuen Benutzer
       description: Erstellt einen Benutzer, indem Name und Email übergeben werden.
@@ -63,35 +56,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         "400":
-          description: Ungültige Eingabedaten (z. B. leere Felder, ungültiges Format).
+          description: Ungültige Eingabedaten (z. B. leere Felder, ungültiges Format).
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
         "409":
           description: Ein Benutzer mit dieser E-Mail existiert bereits.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}:
     get:
       summary: Benutzerdetails abrufen
@@ -114,16 +96,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
     put:
       summary: Aktualisiert ein Benutzerprofil
       parameters:
@@ -152,35 +132,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         "400":
-          description: Ungültige Eingabedaten (z. B. leeres Feld oder ungültige E-Mail).
+          description: Ungültige Eingabedaten (z. B. leeres Feld oder ungültige E-Mail).
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: Benutzer mit der angegebenen ID wurde nicht gefunden.
+          description: Benutzer nicht gefunden.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
     delete:
       summary: Löscht einen Benutzer
       parameters:
@@ -194,20 +163,18 @@ paths:
         "204":
           description: Benutzer erfolgreich gelöscht.
         "404":
-          description: Benutzer wurde nicht gefunden.
+          description: Benutzer nicht gefunden.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books:
     get:
       summary: Liste der Bücher eines Benutzers abrufen
@@ -237,6 +204,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
     post:
       summary: Fügt ein neues Buch hinzu
       description: >
@@ -286,6 +266,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books/search:
     get:
       summary: Suche und Filtere Bücher
@@ -295,22 +276,6 @@ paths:
           schema:
             type: string
           required: true
-        - in: query
-          name: title
-          schema:
-            type: string
-        - in: query
-          name: author
-          schema:
-            type: string
-        - in: query
-          name: year
-          schema:
-            type: integer
-        - in: query
-          name: rating
-          schema:
-            type: integer
         - in: query
           name: title
           schema:
@@ -336,17 +301,28 @@ paths:
                 items:
                   $ref: "#/components/schemas/Book"
         "400":
-          description: Ungültige Anfrageparameter (z. B. fehlerhafte UUID oder unzulässige Query-Parameter).
+          description: Ungültige Anfrageparameter.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Benutzer nicht gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books/{isbn}:
     get:
       summary: Buchdetails abrufen
-      description: >
-        Liefert sämtliche gespeicherten Informationen eines bestimmten Buches für den angegebenen Benutzer.
-        Dazu gehören Titel, Autoren, Verlag, Veröffentlichungsdatum, Beschreibung, Bewertung und Cover-URL.
+      description: Liefert gespeicherte Informationen eines Buches für den Benutzer.
       parameters:
         - in: path
           name: userId
@@ -359,7 +335,7 @@ paths:
           schema:
             type: string
           required: true
-          description: ISBN des abzurufenden Buches
+          description: ISBN des Buches
       responses:
         "200":
           description: Buchdetails.
@@ -368,11 +344,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/Book"
         "404":
-          description: Buch oder Benutzer wurde nicht gefunden.
+          description: Buch oder Benutzer nicht gefunden.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
     put:
       summary: Bewertung eines Buches aktualisieren
       description: Aktualisiert nur den Bewertungswert eines Buches (zwischen 1 und 5).
@@ -412,31 +395,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: Benutzer oder Buch wurde nicht gefunden.
+          description: Buch oder Benutzer nicht gefunden.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  title:
-                    type: string
-                  status:
-                    type: integer
-                  detail:
-                    type: string
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
     delete:
       summary: Buch löschen
       description: Entfernt ein bestimmtes Buch eines Benutzers anhand der ISBN.
@@ -455,27 +427,33 @@ paths:
         "204":
           description: Buch erfolgreich gelöscht.
         "404":
-          description: Buch oder Benutzer wurde nicht gefunden.
+          description: Buch oder Benutzer nicht gefunden.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books/{isbn}/details:
     put:
       summary: Bearbeite Buchinformationen manuell
-      description: |
-        Erlaubt Benutzern, bestimmte Felder eines Buches zu bearbeiten (Titel, Autoren, Beschreibung, Cover-URL).
+      description: Erlaubt das Bearbeiten von Titel, Autoren, Beschreibung oder Cover-URL.
       parameters:
-        - name: userId
-          in: path
-          required: true
+        - in: path
+          name: userId
           schema:
             type: string
-        - name: isbn
-          in: path
           required: true
+        - in: path
+          name: isbn
           schema:
             type: string
+          required: true
       requestBody:
         required: true
         content:
@@ -495,23 +473,30 @@ paths:
                   type: string
       responses:
         "200":
-          description: Buch erfolgreich aktualisiert
+          description: Buch erfolgreich aktualisiert.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Book"
         "400":
-          description: Ungültige Felder
+          description: Ungültige Felder.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: Buch oder Benutzer nicht gefunden
+          description: Buch oder Benutzer nicht gefunden.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books/{isbn}/reviews:
     get:
       summary: Alle Rezensionen eines Buches
@@ -527,14 +512,16 @@ paths:
             type: string
           required: true
       responses:
-        "201":
-          description: Rezension erstellt.
+        "200":
+          description: Liste der Rezensionen.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Review"
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
         "400":
-          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
           content:
             application/json:
               schema:
@@ -551,6 +538,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+
     post:
       summary: Rezension hinzufügen
       description: Erstellt Bewertung und Text für ein Buch.
@@ -587,7 +575,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Review"
         "400":
-          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
           content:
             application/json:
               schema:
@@ -604,6 +592,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+
   /users/{userId}/books/{isbn}/reviews/{reviewId}:
     put:
       summary: Rezension aktualisieren
@@ -635,20 +624,20 @@ paths:
                 reviewText:
                   type: string
       responses:
-        "201":
-          description: Rezension erstellt.
+        "200":
+          description: Rezension erfolgreich aktualisiert.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Review"
         "400":
-          description: Ungültige Eingabedaten (z. B. Rating außerhalb des erlaubten Bereichs).
+          description: Ungültige Eingabedaten.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
         "404":
-          description: Benutzer oder Buch nicht gefunden.
+          description: Benutzer, Buch oder Rezension nicht gefunden.
           content:
             application/json:
               schema:
@@ -659,6 +648,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+
     delete:
       summary: Rezension löschen
       parameters:
@@ -692,6 +682,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetail"
+
 components:
   schemas:
     User:
@@ -708,6 +699,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Book"
+
     ProblemDetail:
       type: object
       properties:
@@ -719,6 +711,7 @@ components:
           type: integer
         detail:
           type: string
+
     Error:
       type: object
       properties:
@@ -737,6 +730,7 @@ components:
         instance:
           type: string
           example: "/users/123e4567-e89b-12d3-a456-426614174000/books/9780140328721"
+
     Book:
       type: object
       properties:
@@ -760,6 +754,7 @@ components:
           type: string
         rating:
           type: integer
+
     Review:
       type: object
       properties:

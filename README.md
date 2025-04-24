@@ -1,114 +1,213 @@
 # Bookmanager – Buchverwaltungs-Backend
 
-Ein Spring Boot Backend zur Verwaltung von Benutzern und deren persönlichen Buchsammlungen. Das System unterstützt das Hinzufügen von Büchern über die ISBN und ruft dazu automatisch alle relevanten Buchdaten über die OpenLibrary API ab. Die Anwendung ist für den Einsatz in modernen DevOps-Umgebungen mit CI/CD, Containerisierung und Helm-Charts konzipiert.
+## Projektbeschreibung
+
+Dieses Projekt ist eine moderne Webanwendung zur Verwaltung von Büchern für verschiedene Benutzer. Benutzer können Bücher anhand ihrer ISBN hinzufügen, Rezensionen schreiben und Bewertungen abgeben. Die Anwendung ruft Buchinformationen automatisch über die OpenLibrary API ab, sobald eine gültige ISBN eingegeben wird.
+
+Das Projekt wurde im Rahmen einer kommissionellen Prüfung an der Hochschule Burgenland umgesetzt und ist für die Nutzung in einer professionellen DevOps-Umgebung vorbereitet – das bedeutet: Automatisierte Tests, Containerisierung (Docker), Continuous Integration/Deployment (CI/CD) und einfache Installation per Helm in Kubernetes.
 
 ---
 
-## Projektüberblick
+## Ziele und Funktionen
 
-Dieses Projekt ist Teil der Kommissionellen-Prüfung im Studiengang Software Engineering an der Hochschule Burgenland.
-Ziel ist die Umsetzung eines Minimum Loveable Products (MLP) mit Fokus auf:
-
-- Mehrbenutzerfähige Buchverwaltung (ohne Authentifizierung)
-- Automatisierter Datenabruf über OpenLibrary API
-- Bewertungssystem mit Filteroption
-- Moderne Softwarepraktiken (CI/CD, Containerisierung, Dokumentation, Tests)
-
----
-
-## Technologie-Stack
-
-- Backend: Java 21, Spring Boot 3.2.x, Gradle
-- API: REST (OpenAPI 3.0)
-- Datenbank: H2 (In-Memory), PostgreSQL
-- Tools: PMD, Checkstyle, JaCoCo, Docker, Helm
-- CI/CD: GitHub Actions
-- Optionales Frontend (Bonus): Angular 19
+- **Verwaltung von Benutzern und deren Büchern**
+- **Automatisches Laden von Buchinformationen über ISBN**
+- **Buchbewertungen & Rezensionen**
+- **Filtern und Suchen von Büchern**
+- **Manuelles Bearbeiten von Buchtiteln, Beschreibungen, Autoren**
+- **Moderne Entwicklungspraktiken (CI/CD, Docker, Helm, API-Dokumentation)**
 
 ---
 
-## Externe APIs
+## Technologischer Überblick
 
-- OpenLibrary Books API: https://openlibrary.org/swagger/docs
-- OpenLibrary Cover API: https://openlibrary.org/dev/docs/api/covers
+- **Backend**: Java 21, Spring Boot 3.2
+- **Build-Tool**: Gradle
+- **API**: REST, OpenAPI 3.0
+- **Datenbanken**: PostgreSQL (Produktion), H2 (Tests/Lokal)
+- **Tests & Qualitätssicherung**: JUnit, JaCoCo, Checkstyle, PMD, SpotBugs, OWASP Dependency-Check
+- **Containerisierung**: Docker
+- **Deployment**: Helm Charts, Kubernetes (z. B. Minikube)
+- **CI/CD**: GitHub Actions
+- **Optionales Frontend**: Angular 19
 
 ---
 
-## Setup & Ausführen
+## Voraussetzungen zur Nutzung
 
-### Voraussetzungen
+Um dieses Projekt lokal oder in der Cloud betreiben zu können, brauchst du:
 
 - Java 21
-- Docker (optional für Container-Betrieb)
-- Helm & Minikube (für Kubernetes-Tests)
+- Docker (zum Erstellen und Ausführen von Containern)
+- Helm & Minikube (falls du das Projekt mit Kubernetes testen willst)
+- Einen PostgreSQL-Datenbankserver (falls nicht lokal H2 genutzt wird)
+- Ein GitHub-Konto, wenn du die CI/CD-Pipeline testen willst
 
-### Lokaler Start (Entwicklung)
+---
+
+## Lokale Ausführung (Entwicklung)
+
+So kannst du das Projekt lokal starten (ohne Docker oder Kubernetes):
 
 ```bash
 ./gradlew bootRun
 ```
 
-Die API ist dann erreichbar unter:  
+Die Anwendung ist danach erreichbar unter:
+
+```
 http://localhost:8080
-
-### Container-Build
-
-```bash
-docker build -t ghcr.io/<your-user>/bookmanager:latest .
-docker push ghcr.io/<your-user>/bookmanager:latest
 ```
 
-### Helm-Deployment (Minikube)
+---
+
+## Docker-Nutzung (optional)
+
+Um das Projekt als Docker-Container zu starten:
+
+```bash
+docker build -t ghcr.io/<dein-benutzer>/bookmanager:latest .
+docker push ghcr.io/<dein-benutzer>/bookmanager:latest
+```
+
+---
+
+## Deployment mit Helm (z. B. Minikube)
+
+Stelle sicher, dass dein Cluster läuft und Helm installiert ist. Danach kannst du das Projekt installieren mit:
 
 ```bash
 helm install bookmanager ./helm/bookmanager
 ```
 
+Zum Aktualisieren:
+
+```bash
+helm upgrade bookmanager ./helm/bookmanager
+```
+
+Zum Entfernen:
+
+```bash
+helm uninstall bookmanager
+```
+
 ---
 
-## Tests & Qualität
+## Datenbank-Zugangsdaten sichern (Secrets)
+
+Um sensible Daten wie das Datenbank-Passwort nicht im Klartext zu speichern, wird ein Kubernetes-Secret verwendet:
+
+```bash
+kubectl create secret generic db-credentials --from-literal=password='DEIN_PASSWORT'
+```
+
+Dieses Secret wird automatisch im Deployment verwendet.
+
+---
+
+## API-Dokumentation (OpenAPI)
+
+Die API ist dokumentiert nach dem OpenAPI-Standard. Du findest die Spezifikation in der Datei:
+
+```
+api-spec-yaml.txt
+```
+
+Einige Beispiel-Endpunkte:
+
+| Methode | Pfad | Beschreibung |
+|--------|------|--------------|
+| GET    | `/users` | Alle Benutzer anzeigen |
+| POST   | `/users` | Neuen Benutzer erstellen |
+| GET    | `/users/{userId}` | Benutzer und Bücher anzeigen |
+| POST   | `/users/{userId}/books` | Neues Buch via ISBN hinzufügen |
+| GET    | `/users/{userId}/books` | Bücher anzeigen (mit Filtermöglichkeit) |
+| PUT    | `/users/{userId}/books/{isbn}` | Buch bewerten oder bearbeiten |
+| DELETE | `/users/{userId}/books/{isbn}` | Buch löschen |
+| GET    | `/users/{userId}/books/{isbn}/reviews` | Rezensionen anzeigen |
+| POST   | `/users/{userId}/books/{isbn}/reviews` | Rezension erstellen |
+
+---
+
+## Fehlerbehandlung
+
+Die Anwendung gibt bei Problemen strukturierte Fehlermeldungen zurück. Diese enthalten:
+
+- **Statuscode** (z. B. 404)
+- **Titel** (z. B. "Benutzer nicht gefunden")
+- **Detail** (z. B. "Benutzer mit ID XY nicht gefunden")
+
+#### Globale Ausnahmebehandlung (Exception Handling)
+
+Alle Exceptions in den REST-Controllern werden zentral im `GlobalExceptionHandler` abgefangen und in strukturierte HTTP-Fehlerantworten (ProblemDetail) übersetzt:
+
+| Exception                         | HTTP-Status               | Titel                       | Beschreibung                               |
+|-----------------------------------|---------------------------|-----------------------------|--------------------------------------------|
+| `MethodArgumentNotValidException` | 400 Bad Request           | Validation failed           | Validierungsfehler bei Request-Body       |
+| `InvalidBookException`            | 400 Bad Request           | Ungültige ISBN / Bewertung  | Ungültige ISBN oder Bewertung außerhalb 1–5 |
+| `UserNotFoundException`           | 404 Not Found             | Benutzer nicht gefunden     | Kein Benutzer mit gegebener ID             |
+| `BookNotFoundException`           | 404 Not Found             | Buch nicht gefunden         | Kein Buch mit gegebener ISBN               |
+| `ReviewNotFoundException`         | 404 Not Found             | Rezension nicht gefunden    | Keine Rezension mit gegebener ID           |
+| `Exception` (alle anderen)        | 500 Internal Server Error | Interner Fehler             | Unerwarteter Serverfehler                  |
+
+Die Clients erhalten jeweils ein JSON-Objekt nach dem RFC 7807-Format (ProblemDetail), z. B.:
+
+```json
+{
+  "type":   "about:blank",
+  "title":  "Buch nicht gefunden",
+  "status": 404,
+  "detail": "Buch mit ISBN 9780140328721 wurde nicht gefunden."
+}
+```
+---
+
+## Tests & Codequalität
+
+Um alle Tests lokal auszuführen:
 
 ```bash
 ./gradlew test
 ./gradlew jacocoTestReport
 ```
 
-CI/CD-Pipeline:
-- Ausführung via GitHub Actions
-- Linting & Style-Check: PMD, Checkstyle
-- Testabdeckung: ≥ 70 % via JaCoCo
-- Commit-Prüfung via Conform
+Die Codequalität wird automatisch geprüft via:
+- **Checkstyle**
+- **PMD**
+- **SpotBugs**
+- **OWASP Dependency-Check**
 
 ---
 
-## .gitignore
+## Git Commit-Konventionen
 
-Die `.gitignore`-Datei stellt sicher, dass keine temporären oder unnötigen Dateien (wie IDE-spezifische Konfigurationen, `build/`, `.gradle/`, `*.iml`, `*.log`, etc.) ins Repository gelangen. Dadurch bleibt das Repository übersichtlich und sauber. Nur relevante Quellcode-Dateien, Konfigurationen und Dokumentationen werden versioniert.
+Wir verwenden das [Conventional Commits](https://www.conventionalcommits.org/) Format, z. B.:
 
----
+- `feat: add get user list and update api spec`
+- `fix: use fully qualified repo name for tag`
 
-## Commit-Richtlinien
-
-Im Projekt wird das [Conventional Commits](https://www.conventionalcommits.org/) Format verwendet. Dies ermöglicht eine konsistente, strukturierte und verständliche Commit-Historie.
-
-Beispiele:
-- `feat: Buch-Entität hinzugefügt`
-- `fix: Fehler beim Laden der OpenLibrary-Daten behoben`
-
-Commit-Nachrichten werden automatisch geprüft (z. B. via Conform in der CI/CD-Pipeline). Commits, die nicht dem Standard entsprechen, werden abgelehnt.
+Diese Struktur sorgt für eine klare, automatische Versionierung und übersichtliche Change-Logs.
 
 ---
 
-## API-Überblick
+## CI/CD Pipeline
 
-Die OpenAPI-Spezifikation findest du in `api-spec-yaml.txt`. Hier ein Auszug der Endpunkte:
+Alle wichtigen Prozesse werden automatisiert über GitHub Actions:
 
-| Methode | Pfad | Beschreibung |
-|--------|------|--------------|
-| GET | `/users` | Alle Benutzer anzeigen |
-| POST | `/users` | Neuen Benutzer anlegen |
-| GET | `/users/{userId}` | Benutzerdetails inkl. Bücher |
-| POST | `/users/{userId}/books` | Buch via ISBN hinzufügen |
-| GET | `/users/{userId}/books` | Bücher anzeigen (mit Filter `?rating=...`) |
-| PUT | `/users/{userId}/books/{isbn}` | Bewertung oder Details aktualisieren |
-| DELETE | `/users/{userId}/books/{isbn}` | Buch löschen |
+- **Commit-Prüfung** (conform)
+- **Code-Analyse** (Checkstyle, PMD, SpotBugs)
+- **Sicherheitsanalyse** (Dependency-Check)
+- **Tests & Coverage-Berichte**
+- **Docker-Build & Push bei Änderungen auf `main`**
+- **Linter für Dockerfile**
+
+---
+
+## Kontakt
+
+Projektleitung: Lukas Neuberger  
+Studiengang: Software Engineering und vernetzte Systeme    
+Hochschule: FH Burgenland
+
+---
